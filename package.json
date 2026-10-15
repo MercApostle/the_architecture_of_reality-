@@ -1,0 +1,33 @@
+{
+  "name": "architecture-of-reality",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@calcom/embed-react": "^1.5.3",
+    "@stripe/stripe-js": "^10.1.0",
+    "gray-matter": "^4.0.3",
+    "next": "16.4.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "stripe": "^23.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.1",
+    "pdf-parse": "^2.4.5",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,230 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   The Architecture of Reality — Design Tokens
+   Obsidian / Charcoal / Gold / Emerald luxury-minimal system (Tailwind v4)
+   ========================================================================== */
+
+@theme {
+  /* Core palette */
+  --color-obsidian: #090b0e;
+  --color-charcoal: #11151c;
+  --color-charcoal-raised: #151a23;
+  --color-line: #1e2633;
+  --color-line-strong: #2a3444;
+  --color-gold: #d4af37;
+  --color-gold-bright: #e9c766;
+  --color-gold-deep: #9c7f22;
+  --color-emerald: #10b981;
+  --color-ember: #c2584c;
+  --color-ink: #e2e8f0;
+  --color-muted: #8a96a8;
+  --color-faint: #566173;
+
+  /* Typography (variables injected by next/font in layout.tsx) */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  /* Motion */
+  --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-spin-slow: spin 60s linear infinite;
+  --animate-spin-slower: spin 120s linear infinite reverse;
+  --animate-pulse-gold: pulse-gold 3.2s ease-in-out infinite;
+  --animate-shimmer: shimmer 6s linear infinite;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes pulse-gold {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: 0% 50%;
+    }
+    to {
+      background-position: 200% 50%;
+    }
+  }
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-obsidian);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-gold) 35%, transparent);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 1px solid var(--color-gold);
+  outline-offset: 3px;
+}
+
+/* ==========================================================================
+   Reusable component classes
+   ========================================================================== */
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+  }
+
+  .eyebrow {
+    @apply font-mono text-[0.68rem] tracking-[0.28em] text-gold uppercase;
+  }
+
+  .card {
+    @apply rounded-2xl border border-line bg-charcoal;
+  }
+
+  .card-hover {
+    @apply transition duration-500 hover:-translate-y-0.5 hover:border-gold/40 hover:shadow-[0_0_0_1px_rgba(212,175,55,0.08),0_20px_60px_-30px_rgba(212,175,55,0.35)];
+  }
+
+  .btn-gold,
+  .btn-ghost {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium tracking-wide transition duration-300 disabled:cursor-not-allowed disabled:opacity-40 select-none;
+    touch-action: manipulation;
+  }
+
+  .btn-gold {
+    @apply bg-gold text-obsidian hover:bg-gold-bright hover:shadow-[0_0_30px_-6px_rgba(212,175,55,0.7)];
+  }
+
+  .btn-ghost {
+    @apply border border-line-strong text-ink hover:border-gold/60 hover:text-gold;
+  }
+
+  .input-dark {
+    @apply rounded-xl border border-line bg-charcoal/90 px-3.5 py-2.5 text-base sm:text-sm text-ink placeholder:text-faint transition duration-200 focus:border-gold/70 focus:outline-none focus:ring-1 focus:ring-gold/40;
+  }
+
+  .text-gradient-gold {
+    background: linear-gradient(
+      100deg,
+      var(--color-gold-deep),
+      var(--color-gold-bright) 30%,
+      #fff3c4 50%,
+      var(--color-gold-bright) 70%,
+      var(--color-gold-deep)
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: var(--animate-shimmer);
+  }
+
+  .hairline {
+    background: linear-gradient(90deg, transparent, var(--color-line-strong), transparent);
+    height: 1px;
+  }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(to right, rgba(30, 38, 51, 0.45) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(30, 38, 51, 0.45) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse at center, black 20%, transparent 75%);
+  }
+
+  /* Long-form reading typography (Library + Dispatches) */
+  .prose-reality {
+    @apply max-w-none text-[1.05rem] leading-[1.85] text-ink/85;
+  }
+  .prose-reality h2 {
+    @apply mt-14 mb-4 font-serif text-3xl font-medium text-ink;
+  }
+  .prose-reality h3 {
+    @apply mt-10 mb-3 font-serif text-2xl text-gold;
+  }
+  .prose-reality p {
+    @apply my-5;
+  }
+  .prose-reality strong {
+    @apply font-semibold text-ink;
+  }
+  .prose-reality em {
+    @apply text-gold-bright/90;
+  }
+  .prose-reality a {
+    @apply text-gold underline decoration-gold/30 underline-offset-4 hover:decoration-gold;
+  }
+  .prose-reality ul,
+  .prose-reality ol {
+    @apply my-5 space-y-2 pl-6;
+  }
+  .prose-reality ul {
+    @apply list-disc marker:text-gold;
+  }
+  .prose-reality ol {
+    @apply list-decimal marker:font-mono marker:text-gold;
+  }
+  .prose-reality blockquote {
+    @apply my-8 border-l-2 border-gold/70 pl-6 font-serif text-2xl leading-snug text-ink italic;
+  }
+  .prose-reality code {
+    @apply rounded bg-charcoal-raised px-1.5 py-0.5 font-mono text-[0.85em] text-gold-bright;
+  }
+  .prose-reality hr {
+    @apply my-12 border-line;
+  }
+  .prose-reality table {
+    @apply my-8 w-full border-collapse text-sm;
+  }
+  .prose-reality th {
+    @apply border-b border-line-strong py-2 pr-4 text-left font-mono text-xs tracking-widest text-gold uppercase;
+  }
+  .prose-reality td {
+    @apply border-b border-line py-3 pr-4 align-top;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+    color: #111;
+  }
+}
