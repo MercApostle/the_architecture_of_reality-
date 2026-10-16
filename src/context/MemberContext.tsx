@@ -44,6 +44,7 @@ interface MemberContextType {
   login: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   loginWithDemo: (asPaid?: boolean) => void;
   signup: (name: string, email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+  checkIdAvailability: (id: string, email?: string) => Promise<{ available: boolean; error?: string }>;
   logout: () => void;
   awardPoints: (taskId: string, points: number, taskName: string) => boolean;
   upgradeToPaidMembership: () => void;
@@ -56,7 +57,7 @@ interface MemberContextType {
 }
 
 const DEMO_PAID_USER: MemberUser = {
-  id: "usr_sovereign_paid",
+  id: "Marcus Sterling",
   name: "Marcus Sterling",
   email: "member@architectureofreality.com",
   tier: "paid",
@@ -162,11 +163,20 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
   // Activate or create a Paid $50 Sovereign Member
   const activatePaidMembership = useCallback(
     (email?: string, name?: string): MemberUser => {
-      const cleanEmail = (email || user?.email || "member@architectureofreality.com").trim().toLowerCase();
-      const cleanName = (name || user?.name || cleanEmail.split("@")[0] || "Sovereign Member").trim();
+      // Check if there was a staged pending registration (with user-picked name / ID)
+      let stagedUser: MemberUser | null = null;
+      try {
+        const rawStaged = localStorage.getItem("ar_pending_registration");
+        if (rawStaged) stagedUser = JSON.parse(rawStaged);
+      } catch {}
+
+      const cleanEmail = (email || stagedUser?.email || user?.email || "member@architectureofreality.com").trim().toLowerCase();
+      const cleanName = (name || stagedUser?.name || user?.name || cleanEmail.split("@")[0] || "Sovereign Member").trim();
+      // The User ID is the name they picked!
+      const chosenId = (stagedUser?.id || user?.id || cleanName).trim();
 
       const paidUser: MemberUser = {
-        id: user?.id || `usr_${Date.now()}`,
+        id: chosenId,
         name: cleanName,
         email: cleanEmail,
         tier: "paid",
@@ -197,12 +207,22 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem(USERS_KEY, JSON.stringify(registered));
         localStorage.setItem("aor_membership_tier", "paid");
         localStorage.setItem("aor_paid_member_active", "true");
+        localStorage.removeItem("ar_pending_registration");
       } catch (e) {
         console.warn("Storage sync notice:", e);
       }
 
+      // Sync to server registry
+      try {
+        fetch("/api/members/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: chosenId, name: cleanName, email: cleanEmail }),
+        }).catch(() => {});
+      } catch {}
+
       persistUser(paidUser);
-      triggerToast(500, "Sovereign Membership Confirmed — 3 Video Calls & Full Vault Unlocked!");
+      triggerToast(500, `Sovereign Membership Confirmed — Welcome, ${chosenId}!`);
       return paidUser;
     },
     [user, persistUser, triggerToast]
@@ -260,12 +280,61 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
     [user, persistUser, triggerToast]
   );
 
-  const login = async (email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
+  // Check ID availability for uniqueness
+  const checkIdAvailability = useCallback(
+    async (id: string, email?: string): Promise<{ available: boolean; error?: string }> => {
+      const cleanId = id.trim();
+      if (!cleanId || cleanId.length < 2) {
+        return { available: false, error: "Member User ID must be at least 2 characters long." };
+      }
+
+      // 1. Check local storage
+      try {
+        const registeredRaw = localStorage.getItem(USERS_KEY);
+        const registered: Array<{ user: MemberUser; pass: string }> = registeredRaw
+          ? JSON.parse(registeredRaw)
+          : [];
+        const lower = cleanId.toLowerCase();
+        const currentEmail = (email || "").trim().toLowerCase();
+
+        const match = registered.find((r) => {
+          if (currentEmail && r.user.email.toLowerCase() === currentEmail) return false;
+          return r.user.id.toLowerCase() === lower || r.user.name.toLowerCase() === lower;
+        });
+
+        if (match || lower === "marcus sterling") {
+          return {
+            available: false,
+            error: `The Member User ID "${cleanId}" is already taken. No duplicates are allowed. Please choose another unique name.`,
+          };
+        }
+      } catch {}
+
+      // 2. Check server registry API
+      try {
+        const res = await fetch(
+          `/api/members/check-id?id=${encodeURIComponent(cleanId)}&email=${encodeURIComponent(email || "")}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (!data.available) {
+            return { available: false, error: data.error };
+          }
+        }
+      } catch {}
+
+      return { available: true };
+    },
+    []
+  );
+
+  // Sign In using either chosen Member User ID or Email Address
+  const login = async (identifier: string, pass: string): Promise<{ success: boolean; error?: string }> => {
     await new Promise((r) => setTimeout(r, 400));
-    const cleanEmail = email.trim().toLowerCase();
+    const clean = identifier.trim().toLowerCase();
 
     // Check demo credentials
-    if (cleanEmail === "member@architectureofreality.com") {
+    if (clean === "member@architectureofreality.com" || clean === "marcus sterling" || clean === "marcus") {
       persistUser(DEMO_PAID_USER);
       return { success: true };
     }
@@ -277,13 +346,18 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
         ? JSON.parse(registeredRaw)
         : [];
 
-      const found = registered.find((r) => r.user.email.toLowerCase() === cleanEmail);
+      const found = registered.find(
+        (r) =>
+          r.user.email.toLowerCase() === clean ||
+          r.user.id.toLowerCase() === clean ||
+          r.user.name.toLowerCase() === clean
+      );
       if (found) {
         if (found.pass === pass || pass === "sovereign2026") {
           if (found.user.tier !== "paid") {
             return {
               success: false,
-              error: "An account was located, but no active $50 CAD Sovereign Membership is associated with this email. Please unlock membership below to enter.",
+              error: "An account was located, but no active $50 CAD Sovereign Membership is associated with this ID. Please unlock membership below to enter.",
             };
           }
           persistUser(found.user);
@@ -295,7 +369,7 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
 
     return {
       success: false,
-      error: "No active Sovereign Membership found for this email. Membership is required to enter the vault. Please unlock your access below for $50 CAD.",
+      error: `No active Sovereign Membership found for "${identifier}". Please verify your Member User ID or email, or join below for $50 CAD.`,
     };
   };
 
@@ -304,14 +378,19 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
     persistUser(DEMO_PAID_USER);
   };
 
+  // Sign Up: User ID IS the name they pick, with duplicate checking enforced
   const signup = async (
     name: string,
     email: string,
     pass: string
   ): Promise<{ success: boolean; error?: string }> => {
     await new Promise((r) => setTimeout(r, 400));
+    const cleanName = name.trim();
     const cleanEmail = email.trim().toLowerCase();
 
+    if (!cleanName || cleanName.length < 2) {
+      return { success: false, error: "Please enter a Member User ID of at least 2 characters." };
+    }
     if (!cleanEmail.includes("@")) {
       return { success: false, error: "Please enter a valid email address." };
     }
@@ -319,21 +398,31 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
       return { success: false, error: "Password must be at least 6 characters long." };
     }
 
-    // Stage paid member credentials so upon checkout return they can sign in seamlessly
+    // Enforce NO DUPLICATE User IDs allowed
+    const availability = await checkIdAvailability(cleanName, cleanEmail);
+    if (!availability.available) {
+      return {
+        success: false,
+        error: availability.error || `The Member User ID "${cleanName}" is already taken. No duplicates are allowed. Please pick a unique name.`,
+      };
+    }
+
+    // Check if email already registered as paid
     try {
       const registeredRaw = localStorage.getItem(USERS_KEY);
       const registered: Array<{ user: MemberUser; pass: string }> = registeredRaw
         ? JSON.parse(registeredRaw)
         : [];
 
-      const existing = registered.find((r) => r.user.email.toLowerCase() === cleanEmail);
-      if (existing && existing.user.tier === "paid") {
-        return { success: false, error: "A paid account already exists for this email. Please log in." };
+      const existingEmail = registered.find((r) => r.user.email.toLowerCase() === cleanEmail);
+      if (existingEmail && existingEmail.user.tier === "paid") {
+        return { success: false, error: "An active paid membership already exists for this email. Please sign in." };
       }
 
+      // The User ID IS the name they pick!
       const pendingUser: MemberUser = {
-        id: `usr_${Date.now()}`,
-        name: name.trim() || cleanEmail.split("@")[0],
+        id: cleanName,
+        name: cleanName,
         email: cleanEmail,
         tier: "paid",
         tierLabel: "Sovereign Member ($50 Tier)",
@@ -351,14 +440,24 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
         ],
       };
 
-      if (existing) {
-        existing.user = pendingUser;
-        existing.pass = pass;
+      if (existingEmail) {
+        existingEmail.user = pendingUser;
+        existingEmail.pass = pass;
       } else {
         registered.push({ user: pendingUser, pass });
       }
       localStorage.setItem(USERS_KEY, JSON.stringify(registered));
-    } catch {}
+      localStorage.setItem("ar_pending_registration", JSON.stringify(pendingUser));
+
+      // Asynchronously sync to server
+      fetch("/api/members/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: cleanName, name: cleanName, email: cleanEmail }),
+      }).catch(() => {});
+    } catch (e) {
+      console.warn("Storage sync notice:", e);
+    }
 
     return { success: true };
   };
@@ -437,6 +536,7 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
         login,
         loginWithDemo,
         signup,
+        checkIdAvailability,
         logout,
         awardPoints,
         upgradeToPaidMembership,

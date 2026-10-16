@@ -42,11 +42,20 @@ export default function CheckoutView() {
   const [stripeNotice, setStripeNotice] = useState<string | null>(null);
   const [showStripeGuide, setShowStripeGuide] = useState(false);
 
-  // Prefill member details if logged in
+  // Prefill member details if logged in or staged from membership join
   useEffect(() => {
     if (user) {
       setName((prev) => prev || user.name);
       setEmail((prev) => prev || user.email);
+    } else {
+      try {
+        const raw = localStorage.getItem("ar_pending_registration");
+        if (raw) {
+          const staged = JSON.parse(raw);
+          if (staged.name) setName((prev) => prev || staged.name);
+          if (staged.email) setEmail((prev) => prev || staged.email);
+        }
+      } catch {}
     }
   }, [user]);
 

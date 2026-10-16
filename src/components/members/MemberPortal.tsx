@@ -441,31 +441,42 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
             )}
 
             {mode === "signup" && (
-              <div className="space-y-1">
-                <label className="font-mono text-[0.68rem] text-muted block uppercase tracking-wider">
-                  Full Name
-                </label>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="font-mono text-[0.68rem] text-muted block uppercase tracking-wider">
+                    Chosen Member User ID (Your Name)
+                  </label>
+                  <span className="font-mono text-[0.62rem] text-gold font-bold">
+                    Unique · No duplicates allowed
+                  </span>
+                </div>
                 <input
                   type="text"
                   required
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (authError) setAuthError("");
+                  }}
                   placeholder="e.g. Jeremy Ashe"
                   className="w-full rounded-xl border border-line bg-obsidian px-4 py-2.5 text-xs text-ink placeholder:text-faint focus:border-gold focus:outline-none transition"
                 />
+                <p className="font-mono text-[0.62rem] text-muted">
+                  This chosen name will be your permanent Member User ID inside the sanctuary.
+                </p>
               </div>
             )}
 
             <div className="space-y-1">
               <label className="font-mono text-[0.68rem] text-muted block uppercase tracking-wider">
-                Email Address
+                {mode === "signin" ? "Member User ID or Email Address" : "Email Address"}
               </label>
               <input
-                type="email"
+                type={mode === "signin" ? "text" : "email"}
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="member@domain.com"
+                placeholder={mode === "signin" ? "e.g. Jeremy Ashe or member@domain.com" : "member@domain.com"}
                 className="w-full rounded-xl border border-line bg-obsidian px-4 py-2.5 text-xs text-ink placeholder:text-faint focus:border-gold focus:outline-none transition"
               />
             </div>
@@ -547,7 +558,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
           </h1>
 
           <p className="text-xs sm:text-sm text-muted">
-            Member ID: <span className="font-mono text-ink">{user.id}</span> · Joined {user.memberSince} · {user.email}
+            User ID: <span className="font-mono text-gold font-bold">{user.id}</span> · Joined {user.memberSince} · {user.email}
           </p>
         </div>
 
