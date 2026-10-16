@@ -1,14 +1,41 @@
 # The Architecture of Reality — Action Roadmap & To-Do List
-*Last Updated: 2026-10-16 | Repository Snapshot: `backup-20261016-0942`*
+*Last Updated: 2026-10-16 | Repository Snapshot: `backup-20261016-1049`*
 
 ---
 
 ## 🛡️ Repository & Backup Snapshot
-- [x] **Local Archive Backup:** Created `.zip` archive in `../Backups/website_backup_2026-10-16_094220.zip` (489 files, 3.79 MB).
-- [x] **Git Snapshot Tag:** Tagged local commit `backup-20261016-0942`.
+- [x] **Local Archive Backup:** Created `.zip` archive in `../Backups/website_backup_2026-10-16_104911.zip` (523 files, 3.84 MB).
+- [x] **Git Snapshot Tag:** Tagged local commit `backup-20261016-1049`.
 - [x] **Remote Push:** Working tree clean and synced with `origin/main` (`github.com:MercApostle/the_architecture_of_reality-`).
 - [x] **TypeScript & Linter Verification:** Zero type errors (`npx tsc --noEmit` passed) & zero linter errors (`npm run lint` passed).
+- [x] **Production Build Verified:** `npm run build` compiled all 86 routes cleanly with Next.js 16.4.1 (Turbopack).
 - [x] **Dev Server Running:** Next.js dev server active at [http://localhost:3000](http://localhost:3000).
+
+---
+
+## ⚡ Master Blueprint v2.0 Accomplishments (Completed)
+- [x] **10,000 Pt Sovereign Progression Engine (`src/context/MemberContext.tsx`):**
+  - [x] 10,000 pt progression ceiling (`MAX_SOVEREIGN_POINTS = 10000`).
+  - [x] 4 Rank Tiers: Initiate (0–499), Apprentice Builder (500–1,999), Systems Architect (2,000–4,999), Sovereign Master (5,000–10,000+).
+  - [x] Atomic points award engine with Supabase RPC support and resilient local storage fallback.
+- [x] **Automatic Quest Verification Sentinel (`QuestCompletionSentinel.tsx`):**
+  - [x] 15-second time-on-page guard combined with 0.8 intersection ratio observer.
+  - [x] Mounted in both `/news/[slug]` and `/library/[volumeSlug]/[chapterSlug]`.
+  - [x] Triggers points award toast notification upon authentic reading completion.
+- [x] **Supabase v2.0 Schema & Seed Data:**
+  - [x] Defined all 7 core tables: `profiles`, `quests`, `user_quests`, `library_volumes`, `volume_chapters`, `academy_modules`, `user_module_progress`, `dispatches`, `video_call_bookings`, `activity_logs`.
+  - [x] Added `award_quest_points` atomic stored procedure and strict member/operator RLS policies.
+  - [x] Seeded canonical quests across 6 categories, 8 Academy modules, 4 volumes, and Dispatches.
+- [x] **Member Vault & Academy Refresh (`/members`):**
+  - [x] 10,000 pt progress bar with visual milestone markers for all 4 tiers.
+  - [x] Categorized Quests list with category filter pills and `.card-completed` styling (`bg-emerald-950/20 border-emerald-500/30`).
+  - [x] 8-module Academy master lessons with audio/video player and points completion actions.
+  - [x] Cal.com 3 video conferences allowance tracker with Google Meet connection links.
+- [x] **Operator Command Center (`/admin`):**
+  - [x] Real-time Member Directory with operator notes editor.
+  - [x] Activity Radar stream logging quest completions, audits, and downloads.
+  - [x] Video call booking schedule review.
+  - [x] Read-only founder application inspection and client delivery roadmap.
 
 ---
 
@@ -39,76 +66,19 @@
 
 ---
 
-### 3. Consultancy Vetting Funnel (`/meet`) & Client Command Center (`/portal`)
-- [ ] **Vetting Funnel Notifications:**
-  - [ ] Add instant notification alert to `jeremyashe@gmail.com` via Resend whenever a business owner submits the `/meet` application.
-- [ ] **Cal.com Confirmation & Prep:**
-  - [ ] Verify Cal.com booking confirmation flow and redirect back to client intake instructions.
-- [ ] **Client Portal Enhancements (`/portal`):**
-  - [ ] Interactive 80-Hour Work Month timesheet / hour logging widget.
-  - [ ] Milestone deliverable sign-off and feedback submission inside the portal.
-  - [ ] Client document vault for proprietary system architecture diagrams and SOPs.
-- [ ] **Admin Command Dashboard (`/admin`):**
-  - [ ] Quick-action buttons to approve consultancy applicants, update milestone statuses, and adjust client health scores directly from the UI.
-
----
-
-### 4. Sovereign Academy LMS & Interactive Workbooks (`/academy`)
-- [ ] **Curriculum Media Integration:**
-  - [ ] Replace placeholder video embeds with Jeremy's unlisted YouTube / Vimeo / Cloudflare Stream video masterclasses.
-  - [ ] Upload audio lecture recordings and link audio player controls.
-- [ ] **Interactive Workbook Enhancements:**
-  - [ ] Add "Export to PDF" / "Print Calibration Sheet" button for completed user workbooks.
-  - [ ] Auto-save indicator ("Draft saved to vessel profile") while users type responses.
-- [ ] **Course Progression & Completion:**
-  - [ ] Mark lesson complete button with automatic advancement to the next module.
-  - [ ] Certificate / Completion badge awarded upon finishing each book's companion course.
-
----
-
-### 5. Sovereign Checkout & All-Access Membership (`/offers` & `/checkout`)
-- [ ] **Live Stripe Activation (When Ready):**
-  - [ ] Obtain live Stripe keys from Stripe Dashboard:
-    - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
-    - `STRIPE_SECRET_KEY`
-    - `STRIPE_WEBHOOK_SECRET`
-  - [ ] Create live recurring subscription price for Sovereign Membership ($50 CAD / mo) and one-time product prices.
-  - [ ] Test live checkout webhook (`/api/webhooks/stripe`) to grant `has_all_access` in production.
-- [ ] **Keep Zero-Cost Local Dev Bypass:**
-  - [ ] Retain the local dev toggle so local development and offline testing never require card payments.
-
----
-
-### 6. Supabase PostgreSQL Production Setup
-- [ ] **Live Database Provisioning:**
-  - [ ] Create free Supabase project at [supabase.com](https://supabase.com).
-  - [ ] Run `supabase/schema.sql` in Supabase SQL Editor.
-  - [ ] Run `supabase/seed.sql` to populate baseline volumes, chapters, and flagship courses.
-  - [ ] Copy Project URL and Anon Key into `.env.local`:
+### 3. Live Supabase PostgreSQL Production Wiring
+- [ ] **Connect Live Supabase Project:**
+  - [ ] Create project at [supabase.com](https://supabase.com).
+  - [ ] Execute `supabase/schema.sql` and `supabase/seed.sql` in the SQL Editor.
+  - [ ] Add Project URL and Anon Key to `.env.local`:
     - `NEXT_PUBLIC_SUPABASE_URL`
     - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-    - `SUPABASE_SERVICE_ROLE_KEY` (server-side only)
-- [ ] **Verify Authentication & RLS:**
-  - [ ] Test sign-up / login flow with email confirmation.
-  - [ ] Confirm Row Level Security ensures users can only read/write their own workbook submissions and audit logs.
+    - `SUPABASE_SERVICE_ROLE_KEY`
+- [ ] **Confirm Remote RLS & Auth Session Persistence.**
 
 ---
 
-### 7. Brand, Design & Technical Polish
-- [ ] **Typography & Glyphs:**
-  - [ ] Verify Hebrew root glyphs and transliteration tooltips in `/news` dispatches and library chapters.
-- [ ] **Favicon & Brand Assets:**
-  - [ ] Replace default Vercel/Next SVGs with custom gold sacred geometry icon / seal for *The Architecture of Reality*.
-- [ ] **SEO & Metadata:**
-  - [ ] Add `sitemap.ts` and `robots.ts` for clean search engine indexing.
-  - [ ] Ensure unique Twitter Cards and OpenGraph image previews across all major routes (`/`, `/library`, `/audit`, `/academy`, `/meet`, `/offers`).
-- [ ] **Mobile & Cross-Device Responsiveness:**
-  - [ ] Test all pages, drawers, navigation menus, and audit forms on mobile viewports (iOS Safari & Chrome).
-
----
-
-## 🎯 Suggested Next Immediate Step
-Pick one of the following to begin:
-1. **Manuscript & Reading Room Expansion:** Expand full chapters in `content/books/` or `src/lib/data/books.ts`.
-2. **Audit Email Automation:** Wire Resend to automatically email the 72-Hour Calibration Directive upon audit completion.
-3. **Supabase Cloud Setup:** Connect live Supabase database keys so user profiles and workbook entries persist to cloud PostgreSQL.
+### 4. Live Stripe Checkout Activation (When Ready)
+- [ ] Add live Stripe keys from Stripe Dashboard to `.env.local`.
+- [ ] Confirm webhook endpoint `api/webhooks/stripe` triggers instant Sovereign Membership activation.
+- [ ] Retain zero-cost developer preview button for local test flows.

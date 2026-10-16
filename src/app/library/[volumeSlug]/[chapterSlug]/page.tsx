@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getChapterBySlug, FALLBACK_VOLUMES, FALLBACK_CHAPTERS } from '@/lib/supabase/queries';
 import { Markdown } from '@/components/ui/primitives';
+import QuestCompletionSentinel from '@/components/gamification/QuestCompletionSentinel';
 
 interface ChapterPageProps {
   params: Promise<{
@@ -143,8 +144,16 @@ export default async function ChapterReaderPage({ params }: ChapterPageProps) {
       {/* ── EDITORIAL READING CONTAINER ──────────────────────── */}
       <main className="container-x max-w-3xl py-12 sm:py-16">
         <div className="prose-reality">
-          <Markdown>{chapter.content_md}</Markdown>
+          <Markdown>{chapter.content_md || chapter.content_markdown || ''}</Markdown>
         </div>
+
+        {/* Automatic Quest Verification: 15s Timer & Scroll Sentinel */}
+        <QuestCompletionSentinel
+          questId={`chap_${canonicalVolumeSlug}_${chapter.slug}`}
+          pointsReward={25}
+          questTitle={`Read: ${chapter.title}`}
+          referenceSlug={`chapter_${chapter.slug}`}
+        />
 
         {/* ── CHAPTER PAGINATION ────────────────────────────────── */}
         <nav className="mt-16 pt-8 border-t border-line grid grid-cols-1 sm:grid-cols-2 gap-4">

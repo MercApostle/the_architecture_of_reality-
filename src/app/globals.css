@@ -7,11 +7,11 @@
 
 @theme {
   /* Core palette */
-  --color-obsidian: #090b0e;
-  --color-charcoal: #11151c;
-  --color-charcoal-raised: #151a23;
-  --color-line: #1e2633;
-  --color-line-strong: #2a3444;
+  --color-obsidian: #07080a;
+  --color-charcoal: #0d0f14;
+  --color-charcoal-raised: #11141c;
+  --color-line: #1a202c;
+  --color-line-strong: #263042;
   --color-gold: #d4af37;
   --color-gold-bright: #e9c766;
   --color-gold-deep: #9c7f22;
@@ -115,8 +115,19 @@ body {
     @apply rounded-2xl border border-line bg-charcoal;
   }
 
+  .card-completed {
+    @apply rounded-2xl border border-emerald-500/30 bg-emerald-950/20 text-ink transition duration-300;
+  }
+
   .card-hover {
     @apply transition duration-500 hover:-translate-y-0.5 hover:border-gold/40 hover:shadow-[0_0_0_1px_rgba(212,175,55,0.08),0_20px_60px_-30px_rgba(212,175,55,0.35)];
+  }
+
+  .grid-canvas {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 32px 32px;
   }
 
   .btn-gold,

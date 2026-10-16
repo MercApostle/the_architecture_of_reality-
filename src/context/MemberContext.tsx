@@ -12,10 +12,13 @@ export interface BookedMeetingCredit {
   meetLink?: string;
 }
 
+export const MAX_SOVEREIGN_POINTS = 10000;
+
 export interface MemberUser {
   id: string;
   name: string;
   email: string;
+  role?: "member" | "operator";
   tier: MembershipTier;
   tierLabel: string;
   memberSince: string;
@@ -27,6 +30,7 @@ export interface MemberUser {
   meetingCreditsTotal: number;
   meetingCreditsRemaining: number;
   bookedMeetings: BookedMeetingCredit[];
+  operatorNotes?: string;
 }
 
 export interface PointToastNotification {
@@ -48,13 +52,22 @@ interface MemberContextType {
   updateUserProfile: (name: string, email: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   awardPoints: (taskId: string, points: number, taskName: string) => boolean;
+  awardQuestPoints: (questId: string, pointsReward: number, questTitle: string, referenceSlug?: string) => Promise<{ success: boolean; pointsAwarded: number; newTotal: number }>;
   upgradeToPaidMembership: () => void;
   activatePaidMembership: (email?: string, name?: string) => MemberUser;
   downgradeToFree: () => void;
   bookMeetingCredit: (callNumber: number, topic?: string, scheduledDate?: string) => boolean;
   toggleModuleComplete: (moduleId: string, moduleTitle?: string) => void;
   toggleBookmark: (resourceId: string) => void;
-  getUserRank: (points: number) => { rank: string; nextRank: string; pointsToNext: number; progress: number };
+  getUserRank: (points: number) => {
+    rank: string;
+    nextRank: string;
+    pointsToNext: number;
+    progress: number;
+    badgeColor: string;
+    badgeBorder: string;
+    badgeBg: string;
+  };
 }
 
 const DEMO_PAID_USER: MemberUser = {
@@ -146,7 +159,7 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
       }
 
       const updatedTasks = [...user.completedTasks, taskId];
-      const updatedPoints = user.points + points;
+      const updatedPoints = Math.min(MAX_SOVEREIGN_POINTS, user.points + points);
 
       const updatedUser: MemberUser = {
         ...user,
@@ -157,6 +170,65 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
       persistUser(updatedUser);
       triggerToast(points, taskName);
       return true;
+    },
+    [user, persistUser, triggerToast]
+  );
+
+  // Automatic Quest Verification (Option A: IntersectionObserver / Scroll Trigger)
+  const awardQuestPoints = useCallback(
+    async (
+      questId: string,
+      pointsReward: number,
+      questTitle: string,
+      referenceSlug?: string
+    ): Promise<{ success: boolean; pointsAwarded: number; newTotal: number }> => {
+      const taskId = `quest_${questId}`;
+      if (!user) {
+        return { success: false, pointsAwarded: 0, newTotal: 0 };
+      }
+      if (
+        user.completedTasks.includes(taskId) ||
+        (referenceSlug && user.completedTasks.includes(`read_blog_${referenceSlug}`))
+      ) {
+        return { success: false, pointsAwarded: 0, newTotal: user.points };
+      }
+
+      // 1. Attempt remote Supabase RPC
+      try {
+        const { createClient } = await import("@/lib/supabase/client");
+        const supabase = createClient();
+        if (supabase) {
+          const { data, error } = await supabase.rpc("award_quest_points", {
+            p_user_id: user.id,
+            p_quest_id: questId,
+          });
+          if (!error && data && data.success) {
+            const newTotal = data.total_points ?? Math.min(MAX_SOVEREIGN_POINTS, user.points + pointsReward);
+            const updatedUser: MemberUser = {
+              ...user,
+              points: newTotal,
+              completedTasks: Array.from(new Set([...user.completedTasks, taskId, ...(referenceSlug ? [`read_blog_${referenceSlug}`] : [])])),
+            };
+            persistUser(updatedUser);
+            triggerToast(pointsReward, `⚡ Dispatch Assimilated: +${pointsReward} Sovereign Points Awarded.`);
+            return { success: true, pointsAwarded: pointsReward, newTotal };
+          }
+        }
+      } catch (err) {
+        console.warn("[Gamification] Supabase RPC bypassed, using local state:", err);
+      }
+
+      // 2. Local fallback
+      const newTotal = Math.min(MAX_SOVEREIGN_POINTS, user.points + pointsReward);
+      const updatedTasks = Array.from(new Set([...user.completedTasks, taskId, ...(referenceSlug ? [`read_blog_${referenceSlug}`] : [])]));
+      const updatedUser: MemberUser = {
+        ...user,
+        points: newTotal,
+        completedTasks: updatedTasks,
+      };
+      persistUser(updatedUser);
+      triggerToast(pointsReward, `⚡ Dispatch Assimilated: +${pointsReward} Sovereign Points Awarded.`);
+      return { success: true, pointsAwarded: pointsReward, newTotal };
     },
     [user, persistUser, triggerToast]
   );
@@ -557,35 +629,50 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getUserRank = (points: number) => {
-    if (points < 100) {
-      return {
-        rank: "Initiate Explorer",
-        nextRank: "Sovereign Apprentice",
-        pointsToNext: 100 - points,
-        progress: Math.min(100, Math.round((points / 100) * 100)),
-      };
-    }
-    if (points < 250) {
-      return {
-        rank: "Sovereign Apprentice",
-        nextRank: "Vessel Architect",
-        pointsToNext: 250 - points,
-        progress: Math.min(100, Math.round(((points - 100) / 150) * 100)),
-      };
-    }
+    // Strictly calculate overall progress as Math.min((total_points / 10000) * 100, 100)%
+    const overallProgress = Math.min(100, Math.max(0, (points / MAX_SOVEREIGN_POINTS) * 100));
+
     if (points < 500) {
       return {
-        rank: "Vessel Architect",
-        nextRank: "Sovereign Master",
+        rank: "Initiate",
+        nextRank: "Apprentice Builder",
         pointsToNext: 500 - points,
-        progress: Math.min(100, Math.round(((points - 250) / 250) * 100)),
+        progress: overallProgress,
+        badgeColor: "text-slate-300",
+        badgeBorder: "border-slate-500/40",
+        badgeBg: "bg-slate-500/10",
+      };
+    }
+    if (points < 2000) {
+      return {
+        rank: "Apprentice Builder",
+        nextRank: "Systems Architect",
+        pointsToNext: 2000 - points,
+        progress: overallProgress,
+        badgeColor: "text-amber-400",
+        badgeBorder: "border-amber-500/40",
+        badgeBg: "bg-amber-500/10",
+      };
+    }
+    if (points < 5000) {
+      return {
+        rank: "Systems Architect",
+        nextRank: "Sovereign Master",
+        pointsToNext: 5000 - points,
+        progress: overallProgress,
+        badgeColor: "text-emerald-400",
+        badgeBorder: "border-emerald-500/40",
+        badgeBg: "bg-emerald-500/10",
       };
     }
     return {
       rank: "Sovereign Master",
-      nextRank: "Max Rank Achieved",
+      nextRank: "Highest Sovereign Tier",
       pointsToNext: 0,
-      progress: 100,
+      progress: overallProgress,
+      badgeColor: "text-gold",
+      badgeBorder: "border-gold/50",
+      badgeBg: "bg-gold/15",
     };
   };
 
@@ -604,6 +691,7 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
         updateUserProfile,
         logout,
         awardPoints,
+        awardQuestPoints,
         upgradeToPaidMembership,
         activatePaidMembership,
         downgradeToFree,

@@ -9,15 +9,22 @@ function normalizeSlug(slug: string): string {
 /** Fallback volumes generated from src/lib/data/books.ts */
 export const FALLBACK_VOLUMES: Volume[] = BOOKS.map((b, index) => {
   const canonicalSlug = b.id.startsWith('the-') ? b.id : `the-${b.id}`;
+  const label = b.volumeLabel ?? (b.number === 0 ? 'FOUNDATION VOLUME' : `BOOK ${['I', 'II', 'III'][b.number - 1] ?? b.number}`);
   return {
     id: `vol-${b.id}`,
     slug: canonicalSlug,
-    volume_label: b.volumeLabel ?? (b.number === 0 ? 'FOUNDATION VOLUME' : `BOOK ${['I', 'II', 'III'][b.number - 1] ?? b.number}`),
+    tab_label: label,
+    volume_label: label,
     title: b.title,
     subtitle: b.subtitle,
+    synopsis: b.overview,
     description: b.overview,
+    blockquote: null,
+    cover_image_url: null,
     pdf_url: b.previewUrl ?? `/pdfs/${b.id}.pdf`,
+    file_size_label: '2.4 MB',
     sort_order: index,
+    is_published: true,
   };
 });
 
@@ -30,11 +37,14 @@ export const FALLBACK_CHAPTERS: Chapter[] = BOOKS.flatMap((b) => {
       id: `chap-${b.id}-${sec.id}`,
       volume_id: `vol-${b.id}`,
       chapter_number: secIndex + 1,
+      roman_numeral: `Chapter ${secIndex + 1}`,
       slug: sec.id,
       title: sec.title,
+      content_markdown: sec.body,
       content_md: sec.body,
       principle_number: principleNum,
       estimated_read_mins: Math.max(5, Math.ceil(sec.body.split(/\s+/).length / 180)),
+      sort_order: secIndex + 1,
     };
   });
 });

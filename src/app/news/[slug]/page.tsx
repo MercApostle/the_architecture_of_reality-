@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { getAllDispatches, getDispatch, formatDate } from "@/lib/dispatches";
 import { getOffer } from "@/lib/data/offers";
 import { Markdown } from "@/components/ui/primitives";
-import BlogReadTracker from "@/components/gamification/BlogReadTracker";
+import QuestCompletionSentinel from "@/components/gamification/QuestCompletionSentinel";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -122,8 +122,13 @@ export default async function NewsDetailPage({ params }: PageProps) {
             <Markdown>{dispatch.content}</Markdown>
           )}
 
-          {/* Gamified Read Completion & Point Tracker */}
-          <BlogReadTracker slug={slug} title={dispatch.title} />
+          {/* Automatic Quest Verification: 15s Timer & Scroll Sentinel */}
+          <QuestCompletionSentinel
+            questId={`dispatch_${slug}`}
+            pointsReward={25}
+            questTitle={`Assimilate: ${dispatch.title}`}
+            referenceSlug={slug}
+          />
         </div>
 
         {/* Contextual Offer Link Block */}

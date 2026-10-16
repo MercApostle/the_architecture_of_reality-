@@ -9,6 +9,16 @@ interface Props {
   initialMode?: "signin" | "signup";
 }
 
+interface QuestItem {
+  id: string;
+  title: string;
+  description: string;
+  points: number;
+  category: "ACCOUNT" | "DISPATCH" | "ASSESSMENT" | "ACADEMY" | "MEMBERSHIP" | "ADVISORY";
+  href?: string;
+  referenceSlug?: string;
+}
+
 export default function MemberPortal({ initialMode = "signin" }: Props) {
   const {
     user,
@@ -41,6 +51,16 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
   const [editError, setEditError] = useState("");
   const [editSaving, setEditSaving] = useState(false);
 
+  // Active dashboard tab
+  const [activeTab, setActiveTab] = useState<"gamification" | "vault" | "curriculum" | "meetings" | "briefings">("gamification");
+  const [questCategoryFilter, setQuestCategoryFilter] = useState<string>("ALL");
+  const [activeModuleIndex, setActiveModuleIndex] = useState<number>(0);
+
+  // Booking modal state for the 3 video conferences
+  const [bookingCallNumber, setBookingCallNumber] = useState<number | null>(null);
+  const [meetingTopic, setMeetingTopic] = useState("Energy & Time Calibration & Schedule Setup");
+  const [meetingDate, setMeetingDate] = useState("2026-10-22");
+
   const openProfileModal = () => {
     setEditName(user?.name === "Sovereign Operator" ? "Jeremy Ashe" : user?.name || "Jeremy Ashe");
     setEditEmail(
@@ -64,15 +84,6 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
     }
     setEditSaving(false);
   };
-
-  // Active dashboard tab
-  const [activeTab, setActiveTab] = useState<"gamification" | "vault" | "curriculum" | "meetings" | "briefings">("gamification");
-  const [activeModuleIndex, setActiveModuleIndex] = useState<number>(0);
-
-  // Booking modal state for the 3 video conferences
-  const [bookingCallNumber, setBookingCallNumber] = useState<number | null>(null);
-  const [meetingTopic, setMeetingTopic] = useState("Energy & Time Calibration & Schedule Setup");
-  const [meetingDate, setMeetingDate] = useState("2026-10-20");
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,17 +129,18 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
         "Three (3) 30-minute 1-on-1 video conference calls with Jeremy Ashe",
         "Full unabridged PDF downloads of all 3 Trilogy books",
         "8-Module Sovereign Operator video & audio curriculum",
-        "+200 Gamification Points & Sovereign Member Badge",
+        "+250 Gamification Points & Sovereign Member Badge",
       ],
     });
     openCart();
   };
 
-  // Curriculum Data
+  // 8 Canonical Academy Modules
   const modules = [
     {
       id: "m1",
-      title: "Module 1: The 80-Hour Work Month Operating System",
+      moduleNumber: 1,
+      title: "Master Lesson 1: The 80-Hour Work Month",
       duration: "48 min",
       sector: "Mind & Time",
       isFree: true,
@@ -142,100 +154,107 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
     },
     {
       id: "m2",
-      title: "Module 2: Dynamic Balance & Stress Drift Neutralization",
-      duration: "42 min",
-      sector: "Energy & Body",
-      isFree: false,
-      summary:
-        "Detecting whether you default into Forcing Polarity (excess control, muscle-through) or Passive Polarity (avoidance, procrastination), and installing automated somatic counterweights.",
-      takeaways: [
-        "The biological signature of high stress: narrow aperture vs sovereign view",
-        "Protocol for breaking avoidance loops in under 15 minutes",
-        "Evening down-regulation protocols to reset nervous system tone",
-      ],
-    },
-    {
-      id: "m3",
-      title: "Module 3: The Tripartite Fruit Test Decision Matrix",
-      duration: "36 min",
-      sector: "Soul & Integrity",
-      isFree: false,
-      summary:
-        "A 3-fold evaluation filter for every critical enterprise and personal crossroad: testing for cognitive truth (Mind), somatic sustainability (Body), and relational congruence (Soul).",
-      takeaways: [
-        "Detecting hidden pretenses before they cause systemic damage",
-        "Why gut intuition without somatic regulation is dangerous",
-        "The 3 non-negotiable questions to ask before signing any contract",
-      ],
-    },
-    {
-      id: "m4",
-      title: "Module 4: Enterprise Firewalls — The 10 Inviolate Covenants",
-      duration: "54 min",
+      moduleNumber: 2,
+      title: "Master Lesson 2: The 10 Operational Firewalls",
+      duration: "52 min",
       sector: "Business Systems",
       isFree: false,
       summary:
-        "Translating the 10 operational firewalls into team governance, clean communication architectures, and high-trust covenants that prevent internal sabotage and burnout.",
+        "Architecting structural containment: installing ten mandatory safeguards against urgent client demands, scope creep, and executive organizational drift.",
       takeaways: [
-        "Eliminating Shav (empty words) in team commitments and agendas",
+        "Eliminating Shav (empty words) in team commitments and client agendas",
         "Building firewalls against Tachmod (coveting competitor roadmaps)",
         "Installing the weekly Sabbath shutdown firewall across executive teams",
       ],
     },
     {
-      id: "m5",
-      title: "Module 5: Biological Regulation & Nervous System Somatics",
-      duration: "40 min",
-      sector: "Body",
+      id: "m3",
+      moduleNumber: 3,
+      title: "Master Lesson 3: The 7-Fold Creation Matrix",
+      duration: "64 min",
+      sector: "Universal Law",
       isFree: false,
       summary:
-        "Nervous-system regulation, sleep architecture restoration, and targeted physical recovery protocols that keep your cognitive container pristine under high-stakes loads.",
+        "The empirical architecture of creation: mapping Mentalism, Correspondence, Vibration, Polarity, Rhythm, Cause & Effect, and Generation to human life and enterprise.",
       takeaways: [
-        "Vagus nerve resets to stop acute adrenaline dumps",
+        "The principle of Correspondence: internal psychology mirrors external enterprise",
+        "Harnessing Polarity to neutralize fear and emotional reactivity",
+        "The law of Rhythm: timing cycles and refusing premature harvest panic",
+      ],
+    },
+    {
+      id: "m4",
+      moduleNumber: 4,
+      title: "Master Lesson 4: The Tripartite Vessel Diagnostic",
+      duration: "45 min",
+      sector: "Integration",
+      isFree: false,
+      summary:
+        "Diagnostic precision: evaluating physical hardware (Body), mental software (Mind), and relational covenant integrity (Soul) without dogmatic moralizing.",
+      takeaways: [
+        "Detecting hidden pretenses before they cause systemic damage",
+        "Why gut intuition without somatic regulation produces false positives",
+        "The 3 non-negotiable questions to ask before signing any contract",
+      ],
+    },
+    {
+      id: "m5",
+      moduleNumber: 5,
+      title: "Master Lesson 5: Sealing Energy & Time Leaks",
+      duration: "50 min",
+      sector: "Energy & Body",
+      isFree: false,
+      summary:
+        "Biological and cognitive containment: identifying high-performer leakage points, overthinking loops, and autonomic nervous system dysregulation.",
+      takeaways: [
+        "Vagus nerve resets to stop acute adrenaline dumps in high-stakes meetings",
         "Optimizing the 90-minute ultradian rhythm for deep execution",
         "Non-stimulant energy architecture for sustained afternoon clarity",
       ],
     },
     {
       id: "m6",
-      title: "Module 6: Sovereign Relational Boundaries & Congruence",
-      duration: "38 min",
-      sector: "Soul",
+      moduleNumber: 6,
+      title: "Master Lesson 6: Load-Bearing Social Covenants",
+      duration: "58 min",
+      sector: "Soul & Covenants",
       isFree: false,
       summary:
-        "Ending passive-aggressive avoidance, communicating absolute truth with kindness, and setting sovereign boundaries that protect your life mission without guilt.",
+        "High-trust relational mechanics: transitioning partnerships from brittle extraction contracts to resilient, sovereign covenants built on foundational truth.",
       takeaways: [
-        "The art of delivering a clean, unassailable 'no'",
+        "The art of delivering a clean, unassailable 'no' with complete poise",
         "Distinguishing between mutual value creation vs parasitic extraction",
         "Auditing relational energy leaks across key partnerships",
       ],
     },
     {
       id: "m7",
-      title: "Module 7: Calibrating the 4-Hour Daily Vector",
-      duration: "32 min",
-      sector: "Mind",
+      moduleNumber: 7,
+      title: "Master Lesson 7: Sovereign Enterprise Economics",
+      duration: "55 min",
+      sector: "Economics",
       isFree: false,
       summary:
-        "Step-by-step setup for structuring your mornings around the highest leverage vector, handling interruptions, and entering effortless flow states.",
+        "Building self-funding, zero-overhead business engines that nourish human flourishment rather than extracting vital energy.",
       takeaways: [
-        "The First 90 Minutes rule: signal fasting and zero incoming feeds",
-        "Eliminating micro-switching and open cognitive tabs",
-        "The single metric that defines daily operational victory",
+        "Fixed overhead elimination: operating without debt or venture shackles",
+        "Pricing on value sovereignty rather than billable hours",
+        "Structuring automated cash flow flywheels that respect founder health",
       ],
     },
     {
       id: "m8",
-      title: "Module 8: The 90-Day Sovereign Architecture Blueprint",
+      moduleNumber: 8,
+      title: "Master Lesson 8: Dynamic Equilibrium & Center Path",
       duration: "60 min",
-      sector: "Integration",
+      sector: "Dynamic Balance",
       isFree: false,
       summary:
-        "Synthesizing the entire Trilogy into a permanent personal and organizational architecture. Quarter-by-quarter calibration routines that ensure permanent sovereignty.",
+        "The art of continuous micro-steering: holding polarity tension, refusing premature harvest panic, and executing master calibration routines that ensure permanent sovereignty.",
       takeaways: [
         "Mapping your next 90 days against universal laws",
         "Quarterly audit cadence: scoring Mind, Body, and Soul progress",
-        "Sustaining dynamic balance through economic and life transitions",
+        "Sustaining dynamic balance through economic cycles and market transitions",
       ],
     },
   ];
@@ -243,11 +262,22 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
   // Vault Items
   const vaultItems = [
     {
+      id: "foundation-volume",
+      title: "The Architecture of Reality",
+      subtitle: "Foundation Volume · Bridging Universal Law & Sovereign Life",
+      pages: "310 Pages · PDF Edition",
+      badge: "Foundation Treatise",
+      filename: "the-architecture-of-reality.pdf",
+      isFree: true,
+      description:
+        "The foundational treatise bridging ancient wisdom with empirical physics. Redefines human misalignment as biological friction and lays out the 7-fold master code.",
+    },
+    {
       id: "master-blueprint",
       title: "Book I: The Master Blueprint",
       subtitle: "Full Unabridged Master Edition",
       pages: "264 Pages · PDF Edition",
-      badge: "Core Canon",
+      badge: "Book I Canon",
       filename: "the-master-blueprint.pdf",
       isFree: false,
       description:
@@ -258,7 +288,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
       title: "Book II: The Genesis Lens",
       subtitle: "Unabridged Field Edition",
       pages: "212 Pages · PDF Edition",
-      badge: "Core Canon",
+      badge: "Book II Canon",
       filename: "the-genesis-lens.pdf",
       isFree: false,
       description:
@@ -269,7 +299,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
       title: "Book III: The Covenant",
       subtitle: "Enterprise Operating Manual",
       pages: "198 Pages · PDF Edition",
-      badge: "Core Canon",
+      badge: "Book III Canon",
       filename: "the-covenant.pdf",
       isFree: false,
       description:
@@ -288,71 +318,116 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
     },
   ];
 
-  // Gamification Quests Registry
-  const quests = [
+  // Canonical Quests Registry (categorized across all 6 core categories)
+  const quests: QuestItem[] = [
     {
       id: "welcome_bonus",
-      title: "Initialize Sovereign Account",
-      description: "Create your free login on The Architecture of Reality",
+      title: "Initialize Sovereign Identity",
+      description: "Secure your personal operator handle and register in the digital vault.",
       points: 50,
-      category: "Account",
-      href: "/login",
+      category: "ACCOUNT",
+      href: "/members",
+    },
+    {
+      id: "profile_calibrate",
+      title: "Calibrate Vessel Bio & Operator Parameters",
+      description: "Set your operator handle, timezone, and communication parameters.",
+      points: 25,
+      category: "ACCOUNT",
+      href: "#profile",
     },
     {
       id: "read_blog_shav-empty-words",
-      title: "Read: Shav & The Business Cost of Empty Words",
-      description: "Discover how empty promises erode coordination and trust",
+      title: "Assimilate: Shav & False Speech",
+      description: "Read Dispatch 01 exploring the biological and energetic cost of empty promises.",
       points: 25,
-      category: "Dispatch",
+      category: "DISPATCH",
       href: "/news/shav-empty-words",
+      referenceSlug: "shav-empty-words",
+    },
+    {
+      id: "read_blog_khata-missing-mark",
+      title: "Assimilate: Khata & Misalignment",
+      description: "Read Dispatch 02 examining sin as practical mechanical friction outside design specs.",
+      points: 25,
+      category: "DISPATCH",
+      href: "/news/khata-missing-mark",
+      referenceSlug: "khata-missing-mark",
+    },
+    {
+      id: "read_blog_dynamic-balance",
+      title: "Assimilate: Dynamic Balance & Equilibrium",
+      description: "Read Dispatch 03 detailing why static perfection fails and how to steer dynamically.",
+      points: 25,
+      category: "DISPATCH",
+      href: "/news/dynamic-balance",
+      referenceSlug: "dynamic-balance",
     },
     {
       id: "read_blog_tachmod-desire-firewall",
-      title: "Read: Tachmod, Desire & The 10th Firewall",
-      description: "Understand the neuroscience of dopamine and comparison traps",
+      title: "Assimilate: Tachmod, Desire & The 10th Firewall",
+      description: "Understand the neuroscience of dopamine, comparison traps, and desire firewalls.",
       points: 25,
-      category: "Dispatch",
+      category: "DISPATCH",
       href: "/news/tachmod-desire-firewall",
+      referenceSlug: "tachmod-desire-firewall",
     },
     {
       id: "read_blog_mitzrayim-narrow-places",
-      title: "Read: Mitzrayim & The Neuroscience of Narrow Places",
-      description: "Map the biological signature of threat-locked forcing modes",
+      title: "Assimilate: Mitzrayim & The Neuroscience of Narrow Places",
+      description: "Map the biological signature of threat-locked forcing modes in high-pressure seasons.",
       points: 25,
-      category: "Dispatch",
+      category: "DISPATCH",
       href: "/news/mitzrayim-narrow-places",
+      referenceSlug: "mitzrayim-narrow-places",
     },
     {
       id: "complete_energy_audit",
-      title: "Complete the 12-Question Energy & Time Audit",
-      description: "Diagnose Mind, Body, and Soul sector leaks with live scoring",
-      points: 100,
-      category: "Assessment",
+      title: "Complete 12-Question Energy Audit",
+      description: "Complete the 3-sector diagnostic audit to uncover Forcing vs. Passive drift.",
+      points: 75,
+      category: "ASSESSMENT",
       href: "/audit",
     },
     {
       id: "complete_module_m1",
       title: "Master Lesson 1: The 80-Hour Work Month",
-      description: "Complete the 48-minute foundational calendar architecture module",
+      description: "Complete the foundational calendar architecture module to shift to 20 hrs/week.",
       points: 50,
-      category: "Academy",
+      category: "ACADEMY",
+      href: "#curriculum",
+    },
+    {
+      id: "complete_module_m2",
+      title: "Master Lesson 2: The 10 Operational Firewalls",
+      description: "Complete the lesson on installing hard organizational boundaries and covenants.",
+      points: 50,
+      category: "ACADEMY",
       href: "#curriculum",
     },
     {
       id: "upgrade_membership",
-      title: "Upgrade to Sovereign Member Access ($50 CAD)",
-      description: "Unlock full Vault, all 8 modules, and 3 video calls with Jeremy",
-      points: 200,
-      category: "Membership",
+      title: "Activate Sovereign Membership ($50 CAD)",
+      description: "Unlock full Vault, all 8 modules, and 3 video calls with Jeremy Ashe.",
+      points: 250,
+      category: "MEMBERSHIP",
       href: "#upgrade",
     },
     {
       id: "booked_call_1",
       title: "Schedule 1st Video Call with Jeremy",
-      description: "Book your first 30-minute 1-on-1 video conference on Google Meet",
+      description: "Book your first 30-minute 1-on-1 strategy session on Google Meet.",
       points: 75,
-      category: "Advisory",
+      category: "ADVISORY",
       href: "#meetings",
+    },
+    {
+      id: "submit_vetting_app",
+      title: "Submit Founder Vetting Application",
+      description: "Apply for bespoke systems advisory and private calendar access.",
+      points: 100,
+      category: "ADVISORY",
+      href: "/meet",
     },
   ];
 
@@ -367,7 +442,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
     );
   }
 
-  // ── UNAUTHENTICATED: PAID MEMBER GATE ───────────────────────────────────
+  // ── UNAUTHENTICATED: SIGN IN / SIGN UP ──────────────────────────────
   if (!isAuthenticated || !user) {
     return (
       <div className="container-x py-16 lg:py-24 max-w-xl mx-auto animate-fade-up">
@@ -428,7 +503,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
             </button>
           </div>
 
-          {/* Membership Deliverables Box on Join Tab */}
+          {/* Deliverables Box on Join Tab */}
           {mode === "signup" && (
             <div className="p-4 rounded-xl border border-gold/40 bg-gold/5 space-y-2.5 text-xs">
               <span className="font-mono text-[0.65rem] text-gold uppercase tracking-wider font-bold block">
@@ -441,15 +516,15 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-gold font-bold">✓</span>
-                  <span><strong>Full 8-Module Video Curriculum</strong> (Dynamic Balance & Operating System)</span>
+                  <span><strong>Full 8-Module Video Curriculum</strong> (80-Hour Work Month &amp; Firewalls)</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-gold font-bold">✓</span>
-                  <span><strong>Unabridged Digital PDF Vault</strong> (All 3 Trilogy Manuscripts)</span>
+                  <span><strong>Unabridged Digital PDF Vault</strong> (All 4 Manuscripts)</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-gold font-bold">✓</span>
-                  <span><strong>500 Bonus Points</strong> & Sovereign Operator Status</span>
+                  <span><strong>500 Bonus Points</strong> &amp; Sovereign Operator Status</span>
                 </li>
               </ul>
             </div>
@@ -493,9 +568,6 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
                   placeholder="e.g. Jeremy Ashe"
                   className="w-full rounded-xl border border-line bg-obsidian px-4 py-2.5 text-xs text-ink placeholder:text-faint focus:border-gold focus:outline-none transition"
                 />
-                <p className="font-mono text-[0.62rem] text-muted">
-                  This chosen name will be your permanent Member User ID inside the sanctuary.
-                </p>
               </div>
             )}
 
@@ -553,9 +625,6 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
             >
               ⚡ Instant Developer Preview (Marcus Sterling Paid Session)
             </button>
-            <p className="text-[0.68rem] text-faint">
-              Need assistance? <Link href="/contact" className="text-gold hover:underline">Contact Advisory directly</Link>.
-            </p>
           </div>
         </div>
       </div>
@@ -566,10 +635,15 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
   const userRankInfo = getUserRank(user.points);
   const isPaid = user.tier === "paid";
   const completedCount = user.completedModules?.length || 0;
+  const progressPercent = Math.min(100, Math.max(1, (user.points / 10000) * 100));
+
+  const filteredQuests = questCategoryFilter === "ALL"
+    ? quests
+    : quests.filter((q) => q.category === questCategoryFilter);
 
   return (
-    <div className="container-x py-12 lg:py-16 space-y-12">
-      {/* ── TOP BANNER / MEMBER PROFILE & TIER STATUS ──────────────────── */}
+    <div className="container-x py-12 lg:py-16 space-y-10">
+      {/* ── TOP BANNER: MEMBER PROFILE & 10,000 PT PROGRESSION ───────────── */}
       <div className="card p-6 sm:p-8 border-gold/40 bg-gradient-to-r from-charcoal via-charcoal to-[#1a170e] flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
         <div className="pointer-events-none absolute -right-24 -bottom-24 size-72 rounded-full bg-gold/10 blur-3xl" />
 
@@ -579,9 +653,11 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
             <span className="font-mono text-xs uppercase tracking-widest text-gold font-bold">
               {isPaid ? "⚡ Sovereign Member ($50 CAD Tier)" : "Free Account"}
             </span>
-            <span className="text-faint text-xs font-mono">• {userRankInfo.rank}</span>
+            <span className={`px-2.5 py-0.5 rounded-full font-mono text-xs font-semibold border ${userRankInfo.badgeBg} ${userRankInfo.badgeBorder} ${userRankInfo.badgeColor}`}>
+              {userRankInfo.rank}
+            </span>
             <span className="bg-gold/20 border border-gold/40 text-gold px-2.5 py-0.5 rounded-full font-mono text-xs font-bold">
-              ⭐ {user.points} Points
+              ⭐ {user.points} / 10,000 pts
             </span>
           </div>
 
@@ -601,7 +677,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
             onClick={() => setActiveTab("meetings")}
             className="btn-gold text-xs px-4 py-2.5 flex items-center gap-2 shadow-md cursor-pointer"
           >
-            <span>📅</span> {user.meetingCreditsRemaining} Video Calls Remaining
+            <span>📹</span> {user.meetingCreditsRemaining} Video Calls Remaining
           </button>
 
           <button
@@ -609,7 +685,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
             onClick={openProfileModal}
             className="btn-ghost text-xs py-2 px-3.5 text-muted hover:text-gold border border-line hover:border-gold/50 cursor-pointer flex items-center gap-1.5"
           >
-            <span>✏️</span> Edit User ID &amp; Email
+            <span>✏️</span> Edit Profile
           </button>
 
           <button
@@ -623,27 +699,90 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
         </div>
       </div>
 
-      {/* Test Session Notice Banner (if user has test .io email or random usr_ id) */}
-      {(user.email.includes("realityarchitecture.io") || user.id.startsWith("usr_") || user.name === "Sovereign Operator") && (
-        <div className="p-4 rounded-xl border border-amber-500/50 bg-amber-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-200 shadow-md">
-          <div className="flex items-center gap-2.5">
-            <span className="text-amber-400 text-base">⚠️</span>
-            <div>
-              <span className="font-semibold text-amber-300">Test Account Active: </span>
-              <span>
-                You are currently signed in with placeholder email <code className="bg-amber-950/60 px-1.5 py-0.5 rounded text-amber-200 font-mono text-[11px]">{user.email}</code> and ID <code className="bg-amber-950/60 px-1.5 py-0.5 rounded text-amber-200 font-mono text-[11px]">{user.id}</code>.
-              </span>
-            </div>
+      {/* ── 10,000 POINT PROGRESSION CEILING & 4-TIER MILESTONE GAUGE ───── */}
+      <div className="card p-6 border-gold/30 bg-charcoal/80 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <span className="font-mono text-[0.65rem] text-gold uppercase tracking-wider block font-semibold">
+              Sovereign Progression Engine &middot; 10,000 PT Master Scale
+            </span>
+            <h3 className="font-serif text-2xl text-ink font-medium">
+              Current Rank: <span className={userRankInfo.badgeColor}>{userRankInfo.rank}</span>
+            </h3>
           </div>
-          <button
-            type="button"
-            onClick={openProfileModal}
-            className="btn-gold text-xs py-1.5 px-4 font-semibold shrink-0 cursor-pointer shadow"
-          >
-            Switch to Real Email &amp; User ID →
-          </button>
+          <div className="text-right sm:space-y-1">
+            <p className="font-mono text-sm text-gold font-bold">
+              {user.points} <span className="text-muted text-xs font-normal">/ 10,000 Total Points ({progressPercent.toFixed(1)}%)</span>
+            </p>
+            {userRankInfo.pointsToNext > 0 ? (
+              <p className="font-mono text-[0.68rem] text-faint">
+                {userRankInfo.pointsToNext} pts to {userRankInfo.nextRank}
+              </p>
+            ) : (
+              <p className="font-mono text-[0.68rem] text-emerald font-semibold">Highest Sovereign Rank Unlocked ✓</p>
+            )}
+          </div>
         </div>
-      )}
+
+        {/* Dynamic Progress Bar */}
+        <div className="h-2.5 w-full bg-obsidian rounded-full overflow-hidden border border-line relative">
+          <div
+            className="h-full bg-gradient-to-r from-gold-deep via-gold to-emerald transition-all duration-700 rounded-full"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+
+        {/* 4 Rank Tier Badges & Thresholds */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+          <div className={`p-3 rounded-xl border text-xs transition ${
+            user.points < 500
+              ? "border-slate-400/50 bg-slate-500/10 text-slate-200 ring-1 ring-slate-400/30"
+              : "border-line bg-obsidian/60 text-muted opacity-80"
+          }`}>
+            <span className="font-mono text-[0.6rem] text-slate-400 uppercase tracking-wider block font-semibold">
+              Tier I &middot; 0–499 pts
+            </span>
+            <h5 className="font-serif text-sm font-medium text-slate-100">Initiate</h5>
+            <span className="font-mono text-[0.62rem] text-faint block mt-1">Foundation Alignment</span>
+          </div>
+
+          <div className={`p-3 rounded-xl border text-xs transition ${
+            user.points >= 500 && user.points < 2000
+              ? "border-amber-500/50 bg-amber-500/10 text-amber-200 ring-1 ring-amber-500/30"
+              : "border-line bg-obsidian/60 text-muted opacity-80"
+          }`}>
+            <span className="font-mono text-[0.6rem] text-amber-400 uppercase tracking-wider block font-semibold">
+              Tier II &middot; 500–1,999 pts
+            </span>
+            <h5 className="font-serif text-sm font-medium text-amber-200">Apprentice Builder</h5>
+            <span className="font-mono text-[0.62rem] text-faint block mt-1">Systems Installation</span>
+          </div>
+
+          <div className={`p-3 rounded-xl border text-xs transition ${
+            user.points >= 2000 && user.points < 5000
+              ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-200 ring-1 ring-emerald-500/30"
+              : "border-line bg-obsidian/60 text-muted opacity-80"
+          }`}>
+            <span className="font-mono text-[0.6rem] text-emerald-400 uppercase tracking-wider block font-semibold">
+              Tier III &middot; 2,000–4,999 pts
+            </span>
+            <h5 className="font-serif text-sm font-medium text-emerald-200">Systems Architect</h5>
+            <span className="font-mono text-[0.62rem] text-faint block mt-1">Dynamic Equilibrium</span>
+          </div>
+
+          <div className={`p-3 rounded-xl border text-xs transition ${
+            user.points >= 5000
+              ? "border-gold/60 bg-gold/15 text-gold ring-1 ring-gold/40"
+              : "border-line bg-obsidian/60 text-muted opacity-80"
+          }`}>
+            <span className="font-mono text-[0.6rem] text-gold uppercase tracking-wider block font-semibold">
+              Tier IV &middot; 5,000–10,000+ pts
+            </span>
+            <h5 className="font-serif text-sm font-medium text-gradient-gold">Sovereign Master</h5>
+            <span className="font-mono text-[0.62rem] text-faint block mt-1">Full Ecosystem Mastery</span>
+          </div>
+        </div>
+      </div>
 
       {/* Edit Profile Modal */}
       {isEditingProfile && (
@@ -679,9 +818,6 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
                   placeholder="e.g. Jeremy Ashe"
                   className="w-full rounded-xl border border-line bg-obsidian px-4 py-2.5 text-xs text-ink placeholder:text-faint focus:border-gold focus:outline-none transition"
                 />
-                <span className="font-mono text-[0.62rem] text-faint block">
-                  This will be your unique identifier across the sanctuary (no duplicates allowed).
-                </span>
               </div>
 
               <div className="space-y-1">
@@ -719,7 +855,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
         </div>
       )}
 
-      {/* ── PAID TIER HIGHLIGHT CARD (IF FREE USER) ────────────────────── */}
+      {/* ── PAID TIER UPGRADE BANNER (IF FREE USER) ────────────────────── */}
       {!isPaid && (
         <div id="upgrade" className="card p-8 border-gold bg-gradient-to-br from-[#1a1608] via-charcoal to-obsidian relative overflow-hidden space-y-6 shadow-[0_0_35px_-5px_rgba(212,175,55,0.25)] ring-1 ring-gold/40">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -736,20 +872,20 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
                 Unlock 3 Video Conferences with Jeremy Ashe &amp; Full Digital Vault
               </h2>
               <p className="text-sm text-muted leading-relaxed">
-                Your login is free. Upgrading to the <strong className="text-gold">$50 CAD Sovereign Membership</strong> gives you <strong className="text-ink">three (3) 30-minute 1-on-1 video conference calls with Jeremy Ashe</strong>, complete unabridged PDF access to all three books, and all 8 mastery modules.
+                Upgrading to the <strong className="text-gold">$50 CAD Sovereign Membership</strong> gives you <strong className="text-ink">three (3) 30-minute 1-on-1 video conference calls with Jeremy Ashe</strong>, complete unabridged PDF access to all four books, and all 8 mastery modules.
               </p>
               <ul className="grid sm:grid-cols-2 gap-2 pt-2 text-xs text-faint">
                 <li className="flex items-center gap-2 text-ink">
                   <span className="text-gold font-bold">✓</span> 3 × 30-Min Video Calls with Jeremy Ashe (Google Meet)
                 </li>
                 <li className="flex items-center gap-2 text-ink">
-                  <span className="text-gold font-bold">✓</span> Full PDF downloads of Books I, II, and III
+                  <span className="text-gold font-bold">✓</span> Full PDF downloads of Foundation Volume &amp; Books I, II, III
                 </li>
                 <li className="flex items-center gap-2 text-ink">
                   <span className="text-gold font-bold">✓</span> All 8 Mastery Curriculum video/audio lessons
                 </li>
                 <li className="flex items-center gap-2 text-ink">
-                  <span className="text-gold font-bold">✓</span> +200 Gamification Bonus Points &amp; Sovereign Badge
+                  <span className="text-gold font-bold">✓</span> +250 Gamification Bonus Points &amp; Sovereign Badge
                 </li>
               </ul>
             </div>
@@ -763,47 +899,10 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
               >
                 <span>🚀</span> Upgrade Now for $50 CAD →
               </button>
-              <p className="font-mono text-[0.65rem] text-faint text-center">
-                Instant activation upon checkout
-              </p>
             </div>
           </div>
         </div>
       )}
-
-      {/* ── GAMIFICATION PROGRESS BAR ─────────────────────────────────── */}
-      <div className="card p-6 border-line bg-charcoal/80 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="space-y-1">
-            <span className="font-mono text-[0.65rem] text-muted uppercase tracking-wider block">
-              Operator Rank &amp; Progression
-            </span>
-            <h3 className="font-serif text-2xl text-ink font-medium">
-              Rank: <span className="text-gold">{userRankInfo.rank}</span>
-            </h3>
-          </div>
-          <div className="text-right sm:space-y-1">
-            <p className="font-mono text-xs text-gold font-bold">
-              {user.points} Total Points
-            </p>
-            {userRankInfo.pointsToNext > 0 ? (
-              <p className="font-mono text-[0.68rem] text-faint">
-                {userRankInfo.pointsToNext} pts to {userRankInfo.nextRank}
-              </p>
-            ) : (
-              <p className="font-mono text-[0.68rem] text-emerald">Highest Sovereign Rank</p>
-            )}
-          </div>
-        </div>
-
-        {/* Progress bar */}
-        <div className="h-2 w-full bg-obsidian rounded-full overflow-hidden border border-line">
-          <div
-            className="h-full bg-gradient-to-r from-gold-deep via-gold to-gold-bright transition-all duration-700 rounded-full"
-            style={{ width: `${userRankInfo.progress}%` }}
-          />
-        </div>
-      </div>
 
       {/* ── NAVIGATION TABS INSIDE MEMBER PORTAL ───────────────────────── */}
       <div className="border-b border-line flex items-center gap-2 overflow-x-auto pb-px">
@@ -816,7 +915,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
               : "border-transparent text-muted hover:text-ink hover:border-line"
           }`}
         >
-          ⭐ Quests &amp; Points ({user.completedTasks.length}/{quests.length})
+          ⭐ Quests &amp; Tasks ({user.completedTasks.length}/{quests.length})
         </button>
 
         <button
@@ -864,35 +963,56 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
               : "border-transparent text-muted hover:text-ink hover:border-line"
           }`}
         >
-          🎙️ Inner Circle Field Notes
+          🎙️ Inner Circle Transmissions
         </button>
       </div>
 
-      {/* ── TAB 1: GAMIFICATION QUEST LOG & POINTS ─────────────────────── */}
+      {/* ── TAB 1: GAMIFICATION QUEST LOG & TASKS ───────────────────────── */}
       {activeTab === "gamification" && (
-        <section className="space-y-8 animate-fade-up">
-          <div className="space-y-2">
-            <span className="eyebrow">Interactive Progression</span>
-            <h2 className="font-serif text-3xl text-ink font-medium">Sovereign Quest Log &amp; Tasks</h2>
-            <p className="text-sm text-muted max-w-2xl">
-              Complete tasks across the platform to earn points, level up your rank, and demonstrate operational mastery. Reading blogs, completing audits, and exploring chapters all award points automatically.
-            </p>
+        <section className="space-y-6 animate-fade-up">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <span className="eyebrow">Interactive Progression</span>
+              <h2 className="font-serif text-3xl text-ink font-medium">Sovereign Quest Log &amp; Tasks</h2>
+              <p className="text-sm text-muted max-w-2xl">
+                Complete quests across the platform to earn points and level up your rank toward Sovereign Master. Reading dispatches with the 15-second sentinel, completing audits, and mastering lessons award points automatically.
+              </p>
+            </div>
+
+            {/* Category Filter Pills */}
+            <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-obsidian border border-line">
+              {["ALL", "ACCOUNT", "DISPATCH", "ASSESSMENT", "ACADEMY", "MEMBERSHIP", "ADVISORY"].map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setQuestCategoryFilter(cat)}
+                  className={`px-2.5 py-1 text-[0.65rem] font-mono rounded-lg transition cursor-pointer ${
+                    questCategoryFilter === cat
+                      ? "bg-gold text-obsidian font-bold"
+                      : "text-muted hover:text-ink"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            {quests.map((quest) => {
-              const isDone = user.completedTasks.includes(quest.id);
+            {filteredQuests.map((quest) => {
+              const isDone = user.completedTasks.includes(quest.id) ||
+                (quest.referenceSlug && user.completedTasks.includes(`read_${quest.referenceSlug}`));
 
               return (
                 <div
                   key={quest.id}
                   className={`card p-5 border transition flex items-start justify-between gap-4 ${
                     isDone
-                      ? "border-emerald/40 bg-emerald/5"
+                      ? "card-completed"
                       : "border-line bg-charcoal/70 hover:border-gold/50"
                   }`}
                 >
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-[0.62rem] text-gold uppercase tracking-wider bg-gold/10 px-2 py-0.5 rounded border border-gold/20">
                         {quest.category}
@@ -900,6 +1020,11 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
                       <span className="font-mono text-xs font-bold text-gold">
                         +{quest.points} pts
                       </span>
+                      {isDone && (
+                        <span className="font-mono text-[0.6rem] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 font-semibold">
+                          Verified ✓
+                        </span>
+                      )}
                     </div>
 
                     <h4 className="font-serif text-base text-ink font-medium">
@@ -919,8 +1044,9 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
                               if (quest.href === "#upgrade") handleCartUpgrade();
                               if (quest.href === "#curriculum") setActiveTab("curriculum");
                               if (quest.href === "#meetings") setActiveTab("meetings");
+                              if (quest.href === "#profile") openProfileModal();
                             }}
-                            className="text-gold font-mono text-xs hover:underline inline-flex items-center gap-1"
+                            className="text-gold font-mono text-xs hover:underline inline-flex items-center gap-1 cursor-pointer"
                           >
                             Execute Quest →
                           </button>
@@ -938,7 +1064,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
 
                   <div className="shrink-0 pt-1">
                     {isDone ? (
-                      <span className="size-6 rounded-full bg-emerald text-obsidian flex items-center justify-center font-bold text-xs font-mono">
+                      <span className="size-6 rounded-full bg-emerald text-obsidian flex items-center justify-center font-bold text-xs font-mono shadow-sm">
                         ✓
                       </span>
                     ) : (
@@ -958,7 +1084,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
       {activeTab === "meetings" && (
         <section className="space-y-8 animate-fade-up">
           <div className="space-y-2">
-            <span className="eyebrow">Video Conferencing Perk</span>
+            <span className="eyebrow">Video Conferencing Allowance</span>
             <h2 className="font-serif text-3xl text-ink font-medium">Three 30-Minute Video Calls with Jeremy Ashe</h2>
             <p className="text-sm text-muted max-w-2xl">
               Included with the $50 Sovereign Member Access. Schedule three dedicated 30-minute 1-on-1 strategy sessions on Google Meet to calibrate your energy scores, structure your 80-hour work month, or review enterprise covenants.
@@ -966,79 +1092,79 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
           </div>
 
           <div className="space-y-6">
-            <div className="p-4 rounded-xl border border-emerald/40 bg-emerald/10 text-emerald text-xs flex items-center justify-between">
-                <span>
-                  ✓ <strong>Sovereign Membership Active:</strong> {user.meetingCreditsRemaining} of 3 video conference calls remaining.
-                </span>
-                <span className="font-mono text-gold font-bold">Google Meet Link Provided</span>
-              </div>
+            <div className="p-4 rounded-xl border border-emerald/40 bg-emerald/10 text-emerald text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <span>
+                ✓ <strong>Sovereign Membership Active:</strong> {user.meetingCreditsRemaining} of 3 video conference calls remaining.
+              </span>
+              <span className="font-mono text-gold font-bold">Google Meet Link Provided</span>
+            </div>
 
-              {/* 3 Call Cards */}
-              <div className="grid gap-6 md:grid-cols-3">
-                {[1, 2, 3].map((callNum) => {
-                  const bookedCall = user.bookedMeetings.find((b) => b.callNumber === callNum);
-                  const isScheduled = bookedCall?.status === "booked";
+            {/* 3 Call Cards */}
+            <div className="grid gap-6 md:grid-cols-3">
+              {[1, 2, 3].map((callNum) => {
+                const bookedCall = user.bookedMeetings.find((b) => b.callNumber === callNum);
+                const isScheduled = bookedCall?.status === "booked";
 
-                  return (
-                    <div
-                      key={callNum}
-                      className={`card p-6 border flex flex-col justify-between space-y-5 ${
-                        isScheduled
-                          ? "border-emerald/50 bg-emerald/5"
-                          : "border-line bg-charcoal/80 hover:border-gold/50"
-                      }`}
-                    >
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono text-xs uppercase tracking-widest text-gold font-bold">
-                            Call #{callNum}
-                          </span>
-                          <span className={`text-[0.68rem] px-2 py-0.5 rounded font-mono ${isScheduled ? "bg-emerald/20 text-emerald font-semibold" : "bg-charcoal text-muted border border-line"}`}>
-                            {isScheduled ? "Scheduled ✓" : "Available"}
+                return (
+                  <div
+                    key={callNum}
+                    className={`card p-6 border flex flex-col justify-between space-y-5 ${
+                      isScheduled
+                        ? "card-completed"
+                        : "border-line bg-charcoal/80 hover:border-gold/50"
+                    }`}
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-xs uppercase tracking-widest text-gold font-bold">
+                          Call #{callNum}
+                        </span>
+                        <span className={`text-[0.68rem] px-2 py-0.5 rounded font-mono ${isScheduled ? "bg-emerald/20 text-emerald font-semibold" : "bg-charcoal text-muted border border-line"}`}>
+                          {isScheduled ? "Scheduled ✓" : "Available"}
+                        </span>
+                      </div>
+
+                      <h4 className="font-serif text-xl text-ink">
+                        {isScheduled ? bookedCall.topic : `30-Min Strategy Call #${callNum}`}
+                      </h4>
+
+                      <p className="text-xs text-muted leading-relaxed">
+                        {isScheduled
+                          ? `Date: ${bookedCall.scheduledDate} · Hosted by Jeremy Ashe on Google Meet.`
+                          : "Private 1-on-1 video conference to evaluate your systems, diagnose friction, and lock in calibration directives."}
+                      </p>
+                    </div>
+
+                    <div className="pt-4 border-t border-line">
+                      {isScheduled ? (
+                        <div className="space-y-2">
+                          <a
+                            href="https://meet.google.com"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="btn-gold w-full text-center text-xs py-2 block font-semibold cursor-pointer shadow"
+                          >
+                            Join Video Call 🎥
+                          </a>
+                          <span className="font-mono text-[0.62rem] text-faint block text-center">
+                            Google Meet Encrypted Channel
                           </span>
                         </div>
-
-                        <h4 className="font-serif text-xl text-ink">
-                          {isScheduled ? bookedCall.topic : `30-Min Strategy Call #${callNum}`}
-                        </h4>
-
-                        <p className="text-xs text-muted leading-relaxed">
-                          {isScheduled
-                            ? `Date: ${bookedCall.scheduledDate} · Hosted by Jeremy Ashe on Google Meet.`
-                            : "Private 1-on-1 video conference to evaluate your systems, diagnose friction, and lock in calibration directives."}
-                        </p>
-                      </div>
-
-                      <div className="pt-4 border-t border-line">
-                        {isScheduled ? (
-                          <div className="space-y-2">
-                            <a
-                              href="https://meet.google.com"
-                              target="_blank"
-                              rel="noreferrer"
-                              className="btn-gold w-full text-center text-xs py-2 block font-semibold"
-                            >
-                              Join Video Call 🎥
-                            </a>
-                            <span className="font-mono text-[0.62rem] text-faint block text-center">
-                              Google Meet Encrypted Channel
-                            </span>
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setBookingCallNumber(callNum)}
-                            className="btn-gold w-full text-center text-xs py-2.5 font-semibold cursor-pointer"
-                          >
-                            Schedule Call #{callNum} →
-                          </button>
-                        )}
-                      </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setBookingCallNumber(callNum)}
+                          className="btn-gold w-full text-center text-xs py-2.5 font-semibold cursor-pointer shadow"
+                        >
+                          Schedule Call #{callNum} →
+                        </button>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </div>
+          </div>
         </section>
       )}
 
@@ -1069,12 +1195,11 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
 
                   <h3 className="font-serif text-2xl text-ink font-medium">{item.title}</h3>
                   <p className="font-mono text-xs text-muted">{item.subtitle}</p>
-
                   <p className="text-xs text-muted leading-relaxed">{item.description}</p>
                 </div>
 
                 <div className="pt-4 border-t border-line flex items-center justify-between gap-4">
-                  {isPaid ? (
+                  {isPaid || item.isFree ? (
                     <>
                       <span className="inline-flex items-center gap-1.5 font-mono text-[0.68rem] text-emerald">
                         <span className="size-1.5 rounded-full bg-emerald" /> Unlocked &amp; Licensed
@@ -1108,7 +1233,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
         </section>
       )}
 
-      {/* ── TAB 4: MASTERY CURRICULUM ───────────────────────────────────── */}
+      {/* ── TAB 4: MASTERY CURRICULUM (8 MODULES) ───────────────────────── */}
       {activeTab === "curriculum" && (
         <section className="space-y-8 animate-fade-up">
           <div className="space-y-2">
@@ -1140,42 +1265,23 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
 
               {/* Lecture Screen */}
               <div className="rounded-2xl border border-line bg-obsidian p-8 text-center space-y-4 relative overflow-hidden shadow-inner">
-                {false ? (
-                  <div className="space-y-3 py-4">
-                    <span className="text-2xl">🔒</span>
-                    <h4 className="font-serif text-xl text-ink">Module Locked</h4>
-                    <p className="text-xs text-muted max-w-sm mx-auto">
-                      Upgrade to the $50 CAD Sovereign Membership to unlock all 8 curriculum modules and 3 video calls.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={handleCartUpgrade}
-                      className="btn-gold text-xs py-2 px-5 cursor-pointer"
-                    >
-                      Unlock All Modules ($50 CAD) →
-                    </button>
+                <div className="size-16 rounded-full bg-gold/15 border border-gold/50 text-gold flex items-center justify-center text-2xl mx-auto shadow-[0_0_20px_-3px_rgba(212,175,55,0.4)]">
+                  ▶
+                </div>
+                <div className="space-y-1">
+                  <p className="font-serif text-xl text-ink font-medium">
+                    Mastery Audio &amp; Slide Lecture
+                  </p>
+                  <p className="font-mono text-xs text-muted">
+                    Narrated by Jeremy Ashe · High-Definition Audio Master
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-4 text-xs font-mono text-faint pt-2">
+                  <span>0:00 / {modules[activeModuleIndex].duration}</span>
+                  <div className="h-1 w-48 rounded-full bg-line overflow-hidden">
+                    <div className="h-full bg-gold w-1/3" />
                   </div>
-                ) : (
-                  <>
-                    <div className="size-16 rounded-full bg-gold/15 border border-gold/50 text-gold flex items-center justify-center text-2xl mx-auto shadow-[0_0_20px_-3px_rgba(212,175,55,0.4)]">
-                      ▶
-                    </div>
-                    <div className="space-y-1">
-                      <p className="font-serif text-xl text-ink font-medium">
-                        Mastery Audio &amp; Slide Lecture
-                      </p>
-                      <p className="font-mono text-xs text-muted">
-                        Narrated by Jeremy Ashe · High-Definition Audio Master
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-center gap-4 text-xs font-mono text-faint pt-2">
-                      <span>0:00 / {modules[activeModuleIndex].duration}</span>
-                      <div className="h-1 w-48 rounded-full bg-line overflow-hidden">
-                        <div className="h-full bg-gold w-1/3" />
-                      </div>
-                    </div>
-                  </>
-                )}
+                </div>
               </div>
 
               {/* Key Takeaways */}
@@ -1226,7 +1332,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
                 <span className="font-mono text-xs text-muted uppercase tracking-wider">
                   Modules
                 </span>
-                <span className="font-mono text-xs text-gold">
+                <span className="font-mono text-xs text-gold font-semibold">
                   {completedCount} / {modules.length} Completed
                 </span>
               </div>
@@ -1235,7 +1341,6 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
                 {modules.map((mod, idx) => {
                   const isCurrent = idx === activeModuleIndex;
                   const isDone = user.completedModules.includes(mod.id);
-                  const locked = false;
 
                   return (
                     <button
@@ -1245,22 +1350,17 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
                       className={`w-full text-left p-4 rounded-xl border transition cursor-pointer flex items-start justify-between gap-3 ${
                         isCurrent
                           ? "border-gold bg-gold/10 text-ink shadow-[0_0_12px_rgba(212,175,55,0.2)]"
+                          : isDone
+                          ? "card-completed text-muted hover:text-ink"
                           : "border-line bg-charcoal/60 text-muted hover:border-gold/40 hover:text-ink"
                       }`}
                     >
                       <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-[0.65rem] text-gold uppercase tracking-wider block">
-                            Module {idx + 1} · {mod.duration}
-                          </span>
-                          {locked && (
-                            <span className="text-[0.6rem] font-mono text-faint bg-obsidian px-1.5 rounded">
-                              $50 CAD Tier
-                            </span>
-                          )}
-                        </div>
+                        <span className="font-mono text-[0.65rem] text-gold uppercase tracking-wider block">
+                          Module {idx + 1} · {mod.duration}
+                        </span>
                         <h4 className="font-serif text-sm font-medium text-ink line-clamp-1">
-                          {mod.title.replace(/^Module \d+: /, "")}
+                          {mod.title.replace(/^Master Lesson \d+: /, "")}
                         </h4>
                       </div>
 
@@ -1345,7 +1445,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
                 <span className="font-mono text-xs text-gold uppercase tracking-widest font-bold">
                   Schedule Video Call #{bookingCallNumber}
                 </span>
-                <h3 className="font-serif text-2xl text-ink">30-Min Meeting with Jeremy Ashe</h3>
+                <h3 className="font-serif text-2xl text-ink">30-Min Strategy Call with Jeremy Ashe</h3>
               </div>
               <button
                 type="button"

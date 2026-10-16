@@ -6,7 +6,9 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type UserRole = 'member' | 'client' | 'admin';
+export type UserRole = 'member' | 'operator' | 'client' | 'admin';
+export type MembershipTier = 'free' | 'sovereign_50' | 'paid';
+export type QuestCategory = 'ACCOUNT' | 'DISPATCH' | 'ASSESSMENT' | 'ACADEMY' | 'MEMBERSHIP' | 'ADVISORY';
 export type Sector = 'mind' | 'body' | 'soul';
 export type Drift = 'forcing' | 'passive' | 'centered';
 export type RecommendedPath =
@@ -15,28 +17,130 @@ export type RecommendedPath =
   | 'academy_covenant'
   | 'consultancy_application';
 
-export interface Volume {
+export interface Profile {
   id: string;
-  slug: string;
-  volume_label: string;
-  title: string;
-  subtitle: string | null;
-  description: string | null;
-  pdf_url: string;
-  sort_order: number;
+  user_handle?: string;
+  email: string;
+  full_name: string | null;
+  role: UserRole;
+  tier?: MembershipTier;
+  has_all_access?: boolean;
+  total_points: number;
+  video_calls_total: number;
+  video_calls_remaining: number;
+  operator_notes?: string | null;
+  stripe_customer_id?: string | null;
+  stripe_subscription_status?: string | null;
+  joined_at?: string;
+  last_active_at?: string;
   created_at?: string;
+  updated_at?: string;
 }
 
-export interface Chapter {
+export interface Quest {
+  id: string;
+  category: QuestCategory;
+  title: string;
+  description: string;
+  points_reward: number;
+  target_url: string;
+  reference_slug: string | null;
+  sort_order: number;
+  is_active: boolean;
+}
+
+export interface UserQuest {
+  id: string;
+  user_id: string;
+  quest_id: string;
+  completed_at: string;
+}
+
+export interface LibraryVolume {
+  id: string;
+  slug: string;
+  tab_label: string;
+  title: string;
+  subtitle: string | null;
+  synopsis: string | null;
+  blockquote: string | null;
+  cover_image_url: string | null;
+  pdf_url: string;
+  file_size_label: string;
+  sort_order: number;
+  is_published: boolean;
+}
+
+export interface VolumeChapter {
   id: string;
   volume_id: string;
   chapter_number: number;
+  roman_numeral: string | null;
+  title: string;
+  content_markdown: string;
+  sort_order: number;
+}
+
+// Backward-compatible Volume & Chapter aliases
+export type Volume = LibraryVolume & {
+  volume_label?: string;
+  description?: string | null;
+};
+export type Chapter = VolumeChapter & {
+  slug: string;
+  content_md?: string;
+  principle_number?: number | null;
+  estimated_read_mins?: number;
+};
+
+export interface AcademyModule {
+  id: string;
+  module_number: number;
+  title: string;
+  description: string | null;
+  duration_minutes: number;
+  video_url: string | null;
+  worksheet_pdf_url: string | null;
+  points_reward: number;
+  is_published: boolean;
+}
+
+export interface UserModuleProgress {
+  id: string;
+  user_id: string;
+  module_id: string;
+  is_completed: boolean;
+  completed_at: string | null;
+}
+
+export interface Dispatch {
+  id: string;
   slug: string;
   title: string;
-  content_md: string;
-  principle_number: number | null;
-  estimated_read_mins: number;
-  created_at?: string;
+  excerpt: string | null;
+  content_markdown: string;
+  cover_image_url: string | null;
+  is_inner_circle_only: boolean;
+  published_at?: string;
+  is_published: boolean;
+}
+
+export interface VideoCallBooking {
+  id: string;
+  user_id: string;
+  cal_booking_uid: string | null;
+  scheduled_for: string;
+  status: 'scheduled' | 'completed' | 'cancelled';
+  session_notes: string | null;
+  created_at: string;
+}
+
+export interface ActivityLog {
+  id: string;
+  user_id: string;
+  action_type: string;
+  metadata: Record<string, Json>;
+  created_at: string;
 }
 
 export interface AuditSubmission {
@@ -52,18 +156,6 @@ export interface AuditSubmission {
   directive_slug: string | null;
   recommended_path: RecommendedPath | null;
   created_at?: string;
-}
-
-export interface Profile {
-  id: string;
-  email: string;
-  full_name: string | null;
-  role: UserRole;
-  has_all_access: boolean;
-  stripe_customer_id: string | null;
-  stripe_subscription_status: string | null;
-  created_at?: string;
-  updated_at?: string;
 }
 
 export interface Course {
@@ -160,4 +252,3 @@ export interface ClientMilestone {
   due_date: string | null;
   created_at?: string;
 }
-
