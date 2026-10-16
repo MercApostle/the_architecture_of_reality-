@@ -10,14 +10,24 @@ export const metadata: Metadata = {
 
 export default function BookPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-[#07080A] py-24 text-center font-mono text-sm text-[#C5A880]">
-          Loading sovereign calendar…
+    <div className="space-y-4">
+      <div className="bg-charcoal/90 border-b border-line py-3">
+        <div className="container-x flex items-center justify-between text-xs font-mono">
+          <span className="text-muted">Enterprise Founder Vetting:</span>
+          <a href="/meet" className="text-gold hover:underline flex items-center gap-1 font-semibold">
+            <span>Take the Founder Vetting Application on /meet &rarr;</span>
+          </a>
         </div>
-      }
-    >
-      <SovereignBookingWidget />
-    </Suspense>
+      </div>
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-[#07080A] py-24 text-center font-mono text-sm text-[#C5A880]">
+            Loading sovereign calendar…
+          </div>
+        }
+      >
+        <SovereignBookingWidget />
+      </Suspense>
+    </div>
   );
 }

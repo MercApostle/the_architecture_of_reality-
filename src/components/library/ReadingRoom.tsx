@@ -386,6 +386,17 @@ export default function ReadingRoom() {
 
                     {isOpen && (
                       <div className="px-6 pb-8 pt-2 border-t border-line/60">
+                        <div className="flex items-center justify-between pb-3 mb-4 border-b border-line/40 text-xs font-mono">
+                          <span className="text-muted">
+                            Reading Room Chapter {idx + 1}
+                          </span>
+                          <Link
+                            href={`/library/${activeBook.id.startsWith("the-") ? activeBook.id : `the-${activeBook.id}`}/${section.id}`}
+                            className="text-gold hover:text-gold-bright flex items-center gap-1.5 border border-gold/30 hover:border-gold bg-gold/5 hover:bg-gold/10 px-2.5 py-1 rounded-md transition duration-200"
+                          >
+                            <span>Deep Reader Mode ↗</span>
+                          </Link>
+                        </div>
                         <div className="max-w-2xl">
                           <Markdown>{section.body}</Markdown>
                         </div>

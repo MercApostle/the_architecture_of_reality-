@@ -20,7 +20,7 @@ export const OFFERS: Offer[] = [
       "Direct evaluation of your energy audit & time leaks",
       "Live calendar booking & native $20 CAD checkout via Cal.com",
     ],
-    checkoutUrl: "/book",
+    checkoutUrl: "/meet",
     badge: "15 Min · $20 CAD",
   },
   {
@@ -36,7 +36,7 @@ export const OFFERS: Offer[] = [
       "Custom 72-Hour Calibration Directive & containment protocols",
       "Live calendar booking & native $35 CAD checkout via Cal.com",
     ],
-    checkoutUrl: "/book",
+    checkoutUrl: "/meet",
     badge: "30 Min · $35 CAD",
   },
   {
@@ -85,21 +85,68 @@ export const OFFERS: Offer[] = [
     badge: "3 Video Calls · $50 CAD",
   },
   {
-    id: "sovereign-operator",
-    title: "The Sovereign Operator Mastery Course",
+    id: "master-blueprint-course",
+    title: "The Master Blueprint Course (Book I)",
     tier: 2,
-    price: 297,
+    price: 147,
     description:
-      "A self-paced academy for operators who refuse to trade their vessel for their output. Master the 80-Hour Work Month and the discipline of Dynamic Balance.",
+      "Calibrating the Vessel & The 80-Hour Work Month. Master biological nervous system regulation, cognitive elimination, and transition your business to the 80-hour work month.",
     deliverables: [
-      "8 modules · 40+ lessons (video + transcripts)",
-      "The 80-Hour Work Month operating system",
-      "Dynamic Balance protocols for Forcing & Passive drift",
-      "Quarterly re-audit with progress tracking",
-      "Lifetime access & updates",
+      "6 multi-modal lessons (HD video embeds + audio lectures)",
+      "Interactive in-browser workbooks with permanent Sovereign Vault persistence",
+      "The 80-Hour Work Month Master Template & Somatic Protocols",
+      "Lifetime access & permanent syllabus updates",
     ],
-    checkoutUrl: env(process.env.NEXT_PUBLIC_CHECKOUT_COURSE),
-    badge: "Flagship",
+    checkoutUrl: "/academy/master-blueprint-course/biological-drag-and-limits",
+    badge: "Book I · $147 CAD",
+  },
+  {
+    id: "genesis-lens-course",
+    title: "The Genesis Lens Diagnostic Mastery (Book II)",
+    tier: 2,
+    price: 197,
+    description:
+      "The 7-Fold Code & The Tripartite Fruit Test. Master the empirical diagnostic engine of creation. Test every partnership, signal, and strategy across Mind, Body, and Soul.",
+    deliverables: [
+      "6 multi-modal lessons (video + audio lectures)",
+      "The Tripartite Fruit Test decision matrix & firmament protocols",
+      "Interactive in-browser worksheets with cloud auto-save",
+      "Full unabridged Book II vector edition",
+    ],
+    checkoutUrl: "/academy/genesis-lens-course/placing-the-firmament",
+    badge: "Book II · $197 CAD",
+  },
+  {
+    id: "covenant-systems-course",
+    title: "Covenant Enterprise Architecture (Book III)",
+    tier: 2,
+    price: 247,
+    description:
+      "High-Trust Systems & The 10 Operational Firewalls. Transform your enterprise from an extractive bureaucracy into a high-trust, load-bearing sovereign organization.",
+    deliverables: [
+      "6 multi-modal lessons (video + audio lectures)",
+      "The 10 Operational Firewalls governance checklist",
+      "Interactive covenants worksheets with permanent cloud persistence",
+      "Generational endurance and team covenant blueprints",
+    ],
+    checkoutUrl: "/academy/covenant-systems-course/covenants-vs-extractive-contracts",
+    badge: "Book III · $247 CAD",
+  },
+  {
+    id: "trilogy-mastery-bundle",
+    title: "The Sovereign Trinity Pass (Books I, II, & III)",
+    tier: 2,
+    price: 347,
+    description:
+      "All 3 Flagship Academy Curricula, 18 interactive in-browser workbooks, full digital vault access, and asynchronous calibration access to Jeremy Ashe.",
+    deliverables: [
+      "All 3 Flagship Courses (Master Blueprint, Genesis Lens, Covenant Systems)",
+      "18 Interactive In-Browser Workbooks saved to your Sovereign Vault",
+      "Full unabridged PDF downloads of all 3 Trilogy Books",
+      "Save $244 compared to individual course enrollments",
+    ],
+    checkoutUrl: "/academy",
+    badge: "Full Trinity Pass · Save $244",
   },
   {
     id: "systems-sprint",
@@ -114,15 +161,15 @@ export const OFFERS: Offer[] = [
       "Six weeks of 1-on-1 architecture sessions",
       "Async advisory access between sessions",
     ],
-    checkoutUrl: env(process.env.NEXT_PUBLIC_CHECKOUT_ADVISORY),
+    checkoutUrl: "/meet",
     badge: "By application",
   },
 ];
 
 export const TIER_LABELS: Record<Offer["tier"], { name: string; blurb: string }> = {
-  1: { name: "Field Manuals", blurb: "Downloadable tools to start calibrating today." },
-  2: { name: "Mastery Academy", blurb: "A complete, self-paced operating system." },
-  3: { name: "Advisory", blurb: "Bespoke architecture for purposeful enterprises." },
+  1: { name: "Field Manuals & Consultations", blurb: "Downloadable tools and direct strategy calibrations." },
+  2: { name: "Sovereign Academy Curricula", blurb: "Self-paced multi-modal operating systems and interactive workbooks." },
+  3: { name: "Enterprise Advisory", blurb: "Bespoke systems architecture for purposeful leaders." },
 };
 
 export const getOffer = (id?: string) => OFFERS.find((o) => o.id === id);

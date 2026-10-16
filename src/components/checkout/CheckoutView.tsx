@@ -260,6 +260,41 @@ export default function CheckoutView() {
     setProcessing(false);
   };
 
+  const handleDevBypass = () => {
+    const custName = name.trim() || user?.name || "Jeremy Ashe";
+    const custEmail = email.trim() || user?.email || "jeremyashe@gmail.com";
+
+    const newOrder: CompletedOrder = {
+      orderId: `BYPASS-${Math.floor(100000 + Math.random() * 900000)}`,
+      createdAt: new Date().toISOString(),
+      customer: {
+        name: custName,
+        email: custEmail,
+        company: company.trim() || undefined,
+      },
+      items: items.length > 0 ? [...items] : [
+        {
+          id: "trilogy-mastery-bundle",
+          title: "The Sovereign Trinity Pass (Test Order)",
+          price: 0,
+          quantity: 1,
+          category: "course",
+          downloadUrl: "/api/download/the-master-blueprint.pdf",
+        },
+      ],
+      subtotal: 0,
+      discountAmount: 0,
+      total: 0,
+      paymentMethod: "Local Dev Bypass (Zero-Cost Test Order)",
+      cardLast4: "DEV0",
+    };
+
+    activatePaidMembership(custEmail, custName);
+    recordCompletedOrder(newOrder);
+    setCompletedOrder(newOrder);
+    clearCart();
+  };
+
   // ==========================================
   // VIEW: COMPLETED ORDER RECEIPT & ACCESS HUB
   // ==========================================
@@ -318,6 +353,34 @@ export default function CheckoutView() {
                 className="btn-gold py-3 px-6 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shrink-0"
               >
                 <span>👑</span> Enter Sovereign Member Portal →
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Sovereign Academy Course Activated Callout Banner */}
+        {completedOrder.items.some(
+          (i) => i.id.includes("course") || i.id.includes("bundle") || i.category === "course"
+        ) && (
+          <div className="card p-6 sm:p-8 border-gold/70 bg-gradient-to-r from-[#171d28] via-[#121620] to-[#0d1017] shadow-[0_15px_40px_-15px_rgba(212,175,55,0.4)] relative overflow-hidden space-y-4">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold via-amber-300 to-gold" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-0.5 font-mono text-[0.7rem] text-gold">
+                  <span>✦</span> Academy Enrollment Activated · Full Syllabus Unlocked
+                </div>
+                <h3 className="font-serif text-2xl text-ink font-medium">
+                  Welcome to the Sovereign Academy Classroom
+                </h3>
+                <p className="text-xs text-muted max-w-xl leading-relaxed">
+                  Your curriculum access is active. All multi-modal lessons, audio transmissions, and interactive in-browser workbooks are unlocked.
+                </p>
+              </div>
+              <Link
+                href="/academy"
+                className="btn-gold py-3 px-6 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shrink-0"
+              >
+                <span>🎓</span> Enter Academy Classroom →
               </Link>
             </div>
           </div>
@@ -787,6 +850,18 @@ export default function CheckoutView() {
                   <span>🔒 Process Test Order · ${total.toFixed(2)} CAD</span>
                 )}
               </button>
+
+              {/* Zero-Cost Local Dev Bypass Button */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleDevBypass}
+                  className="w-full py-3 px-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-mono text-xs uppercase tracking-wider font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+                >
+                  <span>⚡</span>
+                  <span>Instant Local Dev Bypass ($0.00 Test Fulfillment)</span>
+                </button>
+              </div>
 
               <div className="flex items-center justify-center gap-6 font-mono text-[0.65rem] text-faint">
                 <span>✓ 256-Bit SSL</span>

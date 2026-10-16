@@ -2,9 +2,11 @@
 
 export const NAV_LINKS = [
   { href: "/library", label: "Library" },
-  { href: "/news", label: "News" },
+  { href: "/academy", label: "Academy" },
   { href: "/offers", label: "Offers" },
-  { href: "/book", label: "Meet" },
+  { href: "/meet", label: "Meet" },
+  { href: "/portal", label: "Portal" },
+  { href: "/news", label: "News" },
   { href: "/contact", label: "Contacts" },
 ];
 

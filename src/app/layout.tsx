@@ -1,3 +1,4 @@
+import React, { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Inter, JetBrains_Mono } from "next/font/google";
 import Navbar from "@/components/layout/Navbar";
@@ -40,7 +41,7 @@ import { MemberProvider } from "@/context/MemberContext";
 import CartDrawer from "@/components/checkout/CartDrawer";
 import PointsNotificationToast from "@/components/gamification/PointsNotificationToast";
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
@@ -50,7 +51,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col bg-obsidian text-ink">
         <MemberProvider>
           <CartProvider>
-            <Navbar />
+            <Suspense fallback={<div className="h-16 border-b border-line bg-charcoal/80" />}>
+              <Navbar />
+            </Suspense>
             <CartDrawer />
             <main className="flex-1">{children}</main>
             <PointsNotificationToast />

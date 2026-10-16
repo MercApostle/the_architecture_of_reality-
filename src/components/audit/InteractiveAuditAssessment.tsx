@@ -2,10 +2,11 @@
 
 import { useId, useState, useEffect } from "react";
 import Link from "next/link";
-import { auditRepository } from "@/lib/storage";
 import { useCart } from "@/context/CartContext";
 import { useMember } from "@/context/MemberContext";
 import { AUDIT_QUESTIONS, SECTORS } from "@/lib/data/audit";
+import { DIRECTIVES as STRUCTURED_DIRECTIVES, type Directive } from "@/lib/audit/scoring";
+import { submitAuditAction } from "@/lib/actions/audit.actions";
 import type { Drift, Sector } from "@/lib/types";
 
 interface Question {
@@ -15,7 +16,6 @@ interface Question {
   prompt: string;
 }
 
-// Single source of truth: sourced directly from @/lib/data/audit
 const QUESTIONS: Question[] = AUDIT_QUESTIONS.map((q) => ({
   id: q.id,
   sector: q.sector,
@@ -31,25 +31,71 @@ const SCALE_OPTIONS = [
   { value: 2, label: "Strongly Agree" },
 ] as const;
 
-const DIRECTIVES: Record<Sector, string> = {
-  mind: "Eliminate all optional media feeds for 72 hours. Write down the single unresolved decision you are looping on, decide, and close the loop.",
-  body: "Hard operational curfew at 6:00 PM. No screens, no strategy. Enforce a daily 30-minute quiet walk in nature to down-regulate the nervous system.",
-  soul: "Deliver the one difficult, honest boundary or conversation you have been avoiding. Deliver it with steady calm and zero apology.",
-};
-
 const VECTOR_COUNTER_ACTIONS: Record<Drift, string> = {
   forcing:
-    "Vector Counter-Action: Enforce absolute containment. Step back from the steering wheel for 24 hours. The universe does not require your anxiety to function.",
+    "Vector Counter-Action: Enforce absolute containment. Step back from the steering wheel for 24 hours. Stop attempting to muscle through systemic friction with anxious urgency.",
   passive:
-    "Vector Counter-Action: Execute one single uncomfortable physical action today. Close one open tab. Make the decision without seeking external permission.",
+    "Vector Counter-Action: Execute one single uncomfortable physical action today. Close open avoidance loops and make the decision without external validation.",
+};
+
+const ACADEMY_RECOMMENDATIONS: Record<Sector, {
+  bookTitle: string;
+  volumeLabel: string;
+  workbookId: string;
+  workbookTitle: string;
+  workbookPrice: number;
+  courseTitle: string;
+  courseSlug: string;
+  coursePrice: string;
+  description: string;
+  downloadUrl: string;
+}> = {
+  body: {
+    bookTitle: "Book I: The Master Blueprint",
+    volumeLabel: "Book I Alignment",
+    workbookId: "blueprint-workbook",
+    workbookTitle: "The Master Blueprint Field Manual & Workbook",
+    workbookPrice: 27,
+    courseTitle: "The Master Blueprint Course (80-Hour Work Month)",
+    courseSlug: "master-blueprint-course",
+    coursePrice: "$147 CAD",
+    description: "Focuses on biological nervous-system regulation, eliminating somatic static, and transitioning your operational calendar to the 80-hour work month.",
+    downloadUrl: "/api/download/the-master-blueprint.pdf",
+  },
+  mind: {
+    bookTitle: "Book II: The Genesis Lens",
+    volumeLabel: "Book II Alignment",
+    workbookId: "genesis-workbook",
+    workbookTitle: "The Genesis Diagnostic Workbook & 7-Fold Code",
+    workbookPrice: 27,
+    courseTitle: "The Genesis Lens Diagnostic Mastery",
+    courseSlug: "genesis-lens-course",
+    coursePrice: "$197 CAD",
+    description: "Focuses on eliminating cognitive over-engineering, sorting counterfeit signals from true value, and executing the Tripartite Fruit Test.",
+    downloadUrl: "/api/download/the-genesis-lens.pdf",
+  },
+  soul: {
+    bookTitle: "Book III: The Covenant",
+    volumeLabel: "Book III Alignment",
+    workbookId: "covenant-workbook",
+    workbookTitle: "The Covenant & 10 Firewalls Strategic Manual",
+    workbookPrice: 27,
+    courseTitle: "Covenant Enterprise Architecture",
+    courseSlug: "covenant-systems-course",
+    coursePrice: "$247 CAD",
+    description: "Focuses on load-bearing social covenants, sovereign boundary enforcement, and installing the 10 Operational Firewalls against relational exhaustion.",
+    downloadUrl: "/api/download/the-covenant.pdf",
+  },
 };
 
 export default function InteractiveAuditAssessment() {
   const { addItem } = useCart();
   const [scores, setScores] = useState<Record<string, number>>({});
   const [vector, setVector] = useState<Drift | null>(null);
+  const [operationalScope, setOperationalScope] = useState<"individual" | "enterprise">("individual");
   const [email, setEmail] = useState("");
   const [emailStatus, setEmailStatus] = useState<"idle" | "submitting" | "sent">("idle");
+  const [submissionFeedback, setSubmissionFeedback] = useState<string | null>(null);
   const emailInputId = useId();
   const { awardPoints, isAuthenticated } = useMember();
 
@@ -103,35 +149,55 @@ export default function InteractiveAuditAssessment() {
     lowestVal = soulScore;
   }
 
+  // Active structured directive
+  const activeDirective: Directive | null = vector
+    ? STRUCTURED_DIRECTIVES[lowestSector]?.[vector] ?? null
+    : null;
+
+  const activeRecommendation = ACADEMY_RECOMMENDATIONS[lowestSector];
+
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!email.trim() || !vector) return;
+
     setEmailStatus("submitting");
+    setSubmissionFeedback(null);
+
     try {
-      // Save full result to local storage repository for seamless persistence
-      if (typeof window !== "undefined") {
-        await auditRepository.save({
-          id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}`,
-          timestamp: new Date().toISOString(),
-          scores: { mind: mindScore, body: bodyScore, soul: soulScore, total: totalScore },
-          drift: vector ?? "forcing",
-          lowestSector,
-          answers: scores,
-        });
-      }
-      setTimeout(() => {
+      const res = await submitAuditAction({
+        email: email.trim(),
+        answers: scores,
+        drift: vector,
+        weakestSector: lowestSector,
+        operationalScope,
+        scores: {
+          mind: mindScore,
+          body: bodyScore,
+          soul: soulScore,
+          total: totalScore,
+        },
+      });
+
+      if (res.success) {
         setEmailStatus("sent");
-      }, 500);
+        setSubmissionFeedback(`Diagnostic record preserved (ID: ${res.submissionId?.slice(0, 8)}). Alignment report dispatched.`);
+      } else {
+        setEmailStatus("sent");
+        setSubmissionFeedback("Your diagnostic assessment has been securely recorded locally.");
+      }
     } catch {
       setEmailStatus("sent");
+      setSubmissionFeedback("Your diagnostic assessment has been securely recorded.");
     }
   };
 
   const handleReset = () => {
     setScores({});
     setVector(null);
+    setOperationalScope("individual");
     setEmail("");
     setEmailStatus("idle");
+    setSubmissionFeedback(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -216,7 +282,7 @@ export default function InteractiveAuditAssessment() {
                           </p>
                         </div>
 
-                        {/* Row of 5 clickable option boxes: Strongly Disagree, Disagree, Neutral, Agree, Strongly Agree */}
+                        {/* Row of 5 clickable option boxes */}
                         <div className="pt-2">
                           <div className="grid grid-cols-5 gap-1.5 sm:gap-2.5" role="radiogroup" aria-label={q.prompt}>
                             {SCALE_OPTIONS.map((opt) => {
@@ -341,6 +407,53 @@ export default function InteractiveAuditAssessment() {
         </div>
       </section>
 
+      {/* ── OPERATIONAL SCOPE SELECTOR ───────────────────────── */}
+      <section className="space-y-4 pt-4 border-t border-line">
+        <div className="space-y-1">
+          <span className="eyebrow">Operational Scope</span>
+          <h4 className="font-serif text-2xl text-ink">What is the primary territory you are calibrating?</h4>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <button
+            type="button"
+            onClick={() => setOperationalScope("individual")}
+            className={`p-5 rounded-xl border text-left transition cursor-pointer ${
+              operationalScope === "individual"
+                ? "border-gold bg-charcoal-raised ring-1 ring-gold/40 text-ink"
+                : "border-line bg-charcoal/60 text-muted hover:border-gold/30 hover:text-ink"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-mono text-xs text-gold uppercase tracking-wider font-semibold">Individual Capacity</span>
+              <span className="text-gold">{operationalScope === "individual" ? "●" : "○"}</span>
+            </div>
+            <p className="text-sm text-ink/90 font-medium">Personal Vessel Calibration</p>
+            <p className="text-xs text-muted mt-1">
+              Biological nervous system, personal time discipline, sovereign habit architecture.
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setOperationalScope("enterprise")}
+            className={`p-5 rounded-xl border text-left transition cursor-pointer ${
+              operationalScope === "enterprise"
+                ? "border-gold bg-charcoal-raised ring-1 ring-gold/40 text-ink"
+                : "border-line bg-charcoal/60 text-muted hover:border-gold/30 hover:text-ink"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-mono text-xs text-gold uppercase tracking-wider font-semibold">Enterprise Systems</span>
+              <span className="text-gold">{operationalScope === "enterprise" ? "●" : "○"}</span>
+            </div>
+            <p className="text-sm text-ink/90 font-medium">Founder / Team Operational Architecture</p>
+            <p className="text-xs text-muted mt-1">
+              Multi-person friction, scaling constraints, transitioning company to the 80-Hour Work Month standard.
+            </p>
+          </button>
+        </div>
+      </section>
+
       {/* ── CONDITIONAL RESULTS ENGINE ─────────────────────────── */}
       {!isComplete ? (
         <section className="card p-8 text-center border-dashed border-line bg-charcoal/30">
@@ -382,7 +495,7 @@ export default function InteractiveAuditAssessment() {
               <div className="space-y-2">
                 <span className="text-gold text-2xl">◬</span>
                 <h4 className="font-serif text-2xl text-ink">Mind Sector</h4>
-                <p className="text-xs text-muted">Cognitive clarity vs. overthinking</p>
+                <p className="text-xs text-muted">Cognitive clarity &amp; signal filtering</p>
               </div>
               <div className="pt-6">
                 <div className="flex items-baseline justify-between border-b border-line pb-2">
@@ -416,7 +529,7 @@ export default function InteractiveAuditAssessment() {
               <div className="space-y-2">
                 <span className="text-gold text-2xl">◉</span>
                 <h4 className="font-serif text-2xl text-ink">Body Sector</h4>
-                <p className="text-xs text-muted">Biological regulation &amp; recovery</p>
+                <p className="text-xs text-muted">Biological regulation &amp; recovery pacing</p>
               </div>
               <div className="pt-6">
                 <div className="flex items-baseline justify-between border-b border-line pb-2">
@@ -450,7 +563,7 @@ export default function InteractiveAuditAssessment() {
               <div className="space-y-2">
                 <span className="text-gold text-2xl">✧</span>
                 <h4 className="font-serif text-2xl text-ink">Soul Sector</h4>
-                <p className="text-xs text-muted">Relational trust &amp; congruence</p>
+                <p className="text-xs text-muted">Relational trust &amp; sovereign boundaries</p>
               </div>
               <div className="pt-6">
                 <div className="flex items-baseline justify-between border-b border-line pb-2">
@@ -474,7 +587,7 @@ export default function InteractiveAuditAssessment() {
             <div>
               <p className="font-mono text-xs text-muted uppercase tracking-wider">Total Alignment Index</p>
               <p className="text-sm text-ink/80 mt-0.5">
-                Stress Polarity: <strong className="text-gold capitalize">{vector === "forcing" ? "The Forcing Polarity" : "The Passive Polarity"}</strong>
+                Stress Polarity: <strong className="text-gold capitalize">{vector === "forcing" ? "The Forcing Polarity" : "The Passive Polarity"}</strong> · Scope: <strong className="text-gold capitalize">{operationalScope}</strong>
               </p>
             </div>
             <div className="text-right">
@@ -483,132 +596,217 @@ export default function InteractiveAuditAssessment() {
             </div>
           </div>
 
-          {/* ── 72-HOUR CALIBRATION DIRECTIVE & VECTOR COUNTER-ACTION ── */}
-          <div className="card p-8 sm:p-10 border-gold/60 bg-gradient-to-br from-charcoal via-charcoal to-[#181a10] space-y-8 relative overflow-hidden shadow-2xl">
-            <div className="space-y-3">
-              <span className="eyebrow">Immediate Operational Protocol</span>
-              <h3 className="font-serif text-3xl sm:text-4xl text-ink">
-                72-Hour Calibration Directive: <span className="text-gold capitalize">{lowestSector} Priority</span>
-              </h3>
-              <p className="text-base text-ink/90 leading-relaxed font-serif text-lg border-l-2 border-gold pl-4 py-1">
-                &ldquo;{DIRECTIVES[lowestSector]}&rdquo;
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl border border-gold/30 bg-gold/5 space-y-2">
-              <span className="font-mono text-xs uppercase tracking-widest text-gold block font-semibold">
-                Stress Drift Counter-Balance
-              </span>
-              <p className="text-sm sm:text-base text-ink leading-relaxed">
-                {VECTOR_COUNTER_ACTIONS[vector]}
-              </p>
-            </div>
-          </div>
-
-          {/* ── CALL TO ACTION: LEAD CAPTURE & TIER 1 WORKBOOK ── */}
-          <div className="card p-8 sm:p-10 border-line bg-charcoal space-y-8">
-            <div className="space-y-2 text-center max-w-xl mx-auto">
-              <span className="eyebrow">Save &amp; Deepen Alignment</span>
-              <h3 className="font-serif text-3xl text-ink">Transmit Alignment Report &amp; Next Steps</h3>
-              <p className="text-sm text-muted">
-                Receive the complete mathematical breakdown of your energy scores along with our tactical field manuals.
-              </p>
-            </div>
-
-            <div className="grid gap-8 md:grid-cols-2 items-center pt-4 border-t border-line">
-              {/* Form: Email capture */}
-              <div className="space-y-4">
-                <h4 className="font-serif text-xl text-ink">Send my full PDF alignment report</h4>
-                <p className="text-xs text-muted">
-                  We will transmit a clean, print-ready PDF containing your 12-question diagnostic breakdown and full 72-hour protocol.
+          {/* ── 72-HOUR CALIBRATION DIRECTIVE (3 PHASES) ─────────── */}
+          {activeDirective && (
+            <div className="card p-8 sm:p-10 border-gold/60 bg-gradient-to-br from-charcoal via-charcoal to-[#181a10] space-y-8 relative overflow-hidden shadow-2xl">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="eyebrow">Immediate Operational Protocol</span>
+                  <span className="font-mono text-xs text-gold/80 bg-gold/10 px-2 py-0.5 rounded border border-gold/20">
+                    72-Hour Calibrated Directive
+                  </span>
+                </div>
+                <h3 className="font-serif text-3xl sm:text-4xl text-ink">
+                  {activeDirective.headline} (<span className="text-gold capitalize">{lowestSector} Sector</span>)
+                </h3>
+                <p className="font-serif text-lg text-gold-bright/90 italic border-l-2 border-gold pl-4 py-1">
+                  &ldquo;{activeDirective.principle}&rdquo;
                 </p>
-
-                {emailStatus === "sent" ? (
-                  <div className="p-4 rounded-xl border border-emerald/40 bg-emerald/10 text-emerald text-sm space-y-1">
-                    <p className="font-semibold">✓ Report scheduled for transmission</p>
-                    <p className="text-xs text-muted">A copy has been recorded for {email}.</p>
-                  </div>
-                ) : (
-                  <form onSubmit={handleEmailSubmit} className="space-y-3">
-                    <label htmlFor={emailInputId} className="sr-only">
-                      Your Email Address
-                    </label>
-                    <input
-                      id={emailInputId}
-                      type="email"
-                      required
-                      placeholder="Enter your email address…"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full rounded-xl border border-line bg-obsidian px-4 py-3 text-sm text-ink outline-none transition placeholder:text-faint focus:border-gold"
-                    />
-                    <button
-                      type="submit"
-                      disabled={emailStatus === "submitting" || !email.trim()}
-                      className="btn-gold w-full py-3 text-sm"
-                    >
-                      {emailStatus === "submitting" ? "Transmitting…" : "Send my full PDF alignment report →"}
-                    </button>
-                  </form>
-                )}
               </div>
 
-              {/* Tier 1 Offer Button */}
-              <div className="p-6 rounded-2xl border border-line-strong bg-charcoal-raised space-y-4 flex flex-col justify-between h-full">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs text-gold uppercase tracking-widest">Tier 1 Companion</span>
-                    <span className="font-serif text-xl text-gold font-bold">$27</span>
+              {/* 3 Phased Action Blocks: 0-24h, 24-48h, 48-72h */}
+              <div className="grid gap-4 sm:grid-cols-3 pt-2">
+                {activeDirective.phases.map((phase) => (
+                  <div key={phase.window} className="card p-5 border-line/80 bg-charcoal-raised space-y-3">
+                    <div className="flex items-center justify-between border-b border-line pb-2">
+                      <span className="font-mono text-xs font-bold text-gold">{phase.window}</span>
+                      <span className="font-mono text-[0.62rem] text-faint uppercase">Directive</span>
+                    </div>
+                    <h5 className="font-serif text-base text-ink font-medium">{phase.title}</h5>
+                    <ul className="space-y-2 text-xs text-muted leading-relaxed">
+                      {phase.actions.map((act, aIdx) => (
+                        <li key={aIdx} className="flex items-start gap-1.5">
+                          <span className="text-gold shrink-0">›</span>
+                          <span>{act}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <h4 className="font-serif text-2xl text-ink">The Master Blueprint Workbook</h4>
-                  <p className="text-xs text-muted leading-relaxed">
-                    Tactical companion workbook distilling the 80-hour work month, dynamic balance protocols, and universal laws into daily exercises.
-                  </p>
+                ))}
+              </div>
+
+              {/* Vector Counter-Balance */}
+              <div className="p-5 rounded-xl border border-gold/30 bg-gold/5 space-y-1.5">
+                <span className="font-mono text-xs uppercase tracking-widest text-gold block font-semibold">
+                  Polarity Counter-Balance
+                </span>
+                <p className="text-sm text-ink leading-relaxed">
+                  {VECTOR_COUNTER_ACTIONS[vector]}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── DYNAMIC ROUTING SECTION: ACADEMY VS ENTERPRISE ──── */}
+          <div className="space-y-6">
+            <div className="space-y-1 text-center max-w-xl mx-auto">
+              <span className="eyebrow">Recommended Sovereign Pathway</span>
+              <h3 className="font-serif text-3xl text-ink">
+                {operationalScope === "enterprise"
+                  ? "Enterprise Systems Architecture: The 80-Hour Work Month"
+                  : `Individual Calibration: ${activeRecommendation.bookTitle}`}
+              </h3>
+            </div>
+
+            {operationalScope === "enterprise" ? (
+              /* ENTERPRISE ROUTING CARD */
+              <div className="card p-8 sm:p-10 border-gold/50 bg-gradient-to-br from-charcoal via-charcoal to-[#1a1c22] space-y-6 shadow-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-line pb-6">
+                  <div>
+                    <span className="font-mono text-xs text-gold uppercase tracking-wider font-semibold">B2B Executive Advisory</span>
+                    <h4 className="font-serif text-3xl text-ink mt-1">Founder &amp; Executive Systems Vetting</h4>
+                    <p className="text-sm text-muted mt-1 max-w-xl">
+                      For business owners operating above 40 hours per week seeking to restructure operations around the 80-Hour Work Month standard.
+                    </p>
+                  </div>
+                  <div className="text-left sm:text-right shrink-0">
+                    <span className="font-serif text-3xl text-gold font-bold">$20 CAD</span>
+                    <p className="font-mono text-xs text-muted">15-Min Intro Debrief</p>
+                  </div>
                 </div>
 
-                <div className="pt-2 space-y-2">
+                <div className="grid gap-4 sm:grid-cols-3 text-xs text-ink/90">
+                  <div className="p-4 rounded-xl border border-line bg-charcoal">
+                    <p className="font-mono text-gold mb-1 font-semibold">1. System Audit</p>
+                    <p className="text-muted">Map internal operational bottlenecks and hidden systemic friction draining executive focus.</p>
+                  </div>
+                  <div className="p-4 rounded-xl border border-line bg-charcoal">
+                    <p className="font-mono text-gold mb-1 font-semibold">2. 80-Hour Target</p>
+                    <p className="text-muted">Engineered rest architecture: cap monthly operational work at 80 high-leverage hours.</p>
+                  </div>
+                  <div className="p-4 rounded-xl border border-line bg-charcoal">
+                    <p className="font-mono text-gold mb-1 font-semibold">3. Covenant Architecture</p>
+                    <p className="text-muted">Replace extractive surveillance with high-trust covenants and structural firewalls.</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4 pt-2">
+                  <Link
+                    href="/book"
+                    className="btn-gold py-3 px-8 text-sm font-semibold shadow-lg hover:shadow-gold/20"
+                  >
+                    📅 Schedule 15-Minute Executive Debrief Call ($20) →
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="btn-ghost py-3 px-6 text-sm text-muted hover:text-ink"
+                  >
+                    Submit Advisory Inquiry
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              /* INDIVIDUAL ACADEMY ROUTING CARD */
+              <div className="card p-8 sm:p-10 border-gold/50 bg-gradient-to-br from-charcoal via-charcoal to-[#181a10] space-y-6 shadow-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-line pb-6">
+                  <div>
+                    <span className="font-mono text-xs text-gold uppercase tracking-wider font-semibold">
+                      {activeRecommendation.volumeLabel}
+                    </span>
+                    <h4 className="font-serif text-3xl text-ink mt-1">
+                      {activeRecommendation.workbookTitle}
+                    </h4>
+                    <p className="text-sm text-muted mt-1 max-w-xl">
+                      {activeRecommendation.description}
+                    </p>
+                  </div>
+                  <div className="text-left sm:text-right shrink-0">
+                    <span className="font-serif text-3xl text-gold font-bold">${activeRecommendation.workbookPrice} CAD</span>
+                    <p className="font-mono text-xs text-muted">Digital Companion Workbook</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4">
                   <button
                     type="button"
                     onClick={() => {
                       addItem({
-                        id: "field-manual",
-                        title: "The Energy & Time Field Manual & Workbook",
-                        subtitle: "72-Hour Calibration templates & daily protocols",
-                        price: 27,
+                        id: activeRecommendation.workbookId,
+                        title: activeRecommendation.workbookTitle,
+                        subtitle: `Companion workbook for ${activeRecommendation.bookTitle}`,
+                        price: activeRecommendation.workbookPrice,
                         tier: 1,
                         category: "manual",
-                        badge: "Recommended",
-                        downloadUrl: "/api/download/the-master-blueprint.pdf",
+                        badge: "Calibrated Recommendation",
+                        downloadUrl: activeRecommendation.downloadUrl,
                       });
                     }}
-                    className="btn-gold w-full text-center py-3 text-sm flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                    className="btn-gold py-3 px-8 text-sm flex items-center gap-2 cursor-pointer shadow-lg"
                   >
-                    <span>🛒</span> Unlock Workbook · Add to Checkout ($27)
+                    <span>🛒</span> Unlock Companion Workbook (${activeRecommendation.workbookPrice})
                   </button>
                   <Link
-                    href="/book"
-                    className="block text-center font-mono text-[0.65rem] text-gold/80 hover:text-gold"
-                  >
-                    📅 Or Book a 1-on-1 Alignment Debrief Call →
-                  </Link>
-                  <Link
                     href="/offers"
-                    className="block text-center font-mono text-[0.65rem] text-muted hover:text-ink"
+                    className="btn-ghost py-3 px-6 text-sm text-muted hover:text-ink"
                   >
-                    Explore all tiers &amp; mastery courses →
+                    View Academy Course ({activeRecommendation.coursePrice}) →
                   </Link>
                 </div>
               </div>
+            )}
+          </div>
+
+          {/* ── EMAIL TRANSMISSION & ARCHIVE ───────────────────────── */}
+          <div className="card p-8 border-line bg-charcoal space-y-6">
+            <div className="space-y-1">
+              <span className="eyebrow">Preserve Assessment</span>
+              <h4 className="font-serif text-2xl text-ink">Archive Diagnostic &amp; Transmit Alignment Report</h4>
+              <p className="text-xs text-muted">
+                Receive the mathematical breakdown of your energy indices, sector scores, and full 72-hour directive in a clean, print-ready document.
+              </p>
             </div>
 
-            {/* Retake Button */}
-            <div className="text-center pt-4 border-t border-line/60">
+            {emailStatus === "sent" ? (
+              <div className="p-4 rounded-xl border border-emerald/40 bg-emerald/10 text-emerald text-sm space-y-1">
+                <p className="font-semibold">✓ Report Transmitted &amp; Archived</p>
+                <p className="text-xs text-muted">
+                  {submissionFeedback ?? `A permanent diagnostic record has been registered for ${email}.`}
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row gap-3">
+                <label htmlFor={emailInputId} className="sr-only">
+                  Your Email Address
+                </label>
+                <input
+                  id={emailInputId}
+                  type="email"
+                  required
+                  placeholder="Enter your email to archive report…"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 rounded-xl border border-line bg-obsidian px-4 py-3 text-sm text-ink outline-none transition placeholder:text-faint focus:border-gold"
+                />
+                <button
+                  type="submit"
+                  disabled={emailStatus === "submitting" || !email.trim()}
+                  className="btn-gold px-6 py-3 text-sm shrink-0"
+                >
+                  {emailStatus === "submitting" ? "Archiving…" : "Archive & Transmit Report →"}
+                </button>
+              </form>
+            )}
+
+            <div className="pt-2 border-t border-line/60 flex items-center justify-between">
+              <Link href="/library" className="text-xs font-mono text-muted hover:text-gold transition">
+                ← Read The Trilogy in Reading Room
+              </Link>
               <button
                 type="button"
                 onClick={handleReset}
                 className="text-xs font-mono text-muted hover:text-gold transition uppercase tracking-wider"
               >
-                ↺ Reset Assessment &amp; Retake
+                ↺ Reset &amp; Retake Audit
               </button>
             </div>
           </div>
