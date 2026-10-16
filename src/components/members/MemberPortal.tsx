@@ -17,6 +17,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
     login,
     loginWithDemo,
     signup,
+    updateUserProfile,
     logout,
     toggleModuleComplete,
     bookMeetingCredit,
@@ -32,6 +33,37 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
   const [name, setName] = useState("");
   const [authError, setAuthError] = useState("");
   const [authSubmitting, setAuthSubmitting] = useState(false);
+
+  // Profile editing state
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editError, setEditError] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
+
+  const openProfileModal = () => {
+    setEditName(user?.name === "Sovereign Operator" ? "Jeremy Ashe" : user?.name || "Jeremy Ashe");
+    setEditEmail(
+      user?.email?.includes("realityarchitecture.io")
+        ? "jeremyashe@gmail.com"
+        : user?.email || "jeremyashe@gmail.com"
+    );
+    setEditError("");
+    setIsEditingProfile(true);
+  };
+
+  const handleProfileSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEditError("");
+    setEditSaving(true);
+    const res = await updateUserProfile(editName, editEmail);
+    if (!res.success) {
+      setEditError(res.error || "Could not update profile.");
+    } else {
+      setIsEditingProfile(false);
+    }
+    setEditSaving(false);
+  };
 
   // Active dashboard tab
   const [activeTab, setActiveTab] = useState<"gamification" | "vault" | "curriculum" | "meetings" | "briefings">("gamification");
@@ -574,6 +606,14 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
 
           <button
             type="button"
+            onClick={openProfileModal}
+            className="btn-ghost text-xs py-2 px-3.5 text-muted hover:text-gold border border-line hover:border-gold/50 cursor-pointer flex items-center gap-1.5"
+          >
+            <span>✏️</span> Edit User ID &amp; Email
+          </button>
+
+          <button
+            type="button"
             id="member-signout-btn"
             onClick={logout}
             className="btn-ghost text-xs py-2 px-3.5 text-muted hover:text-ink cursor-pointer"
@@ -582,6 +622,102 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
           </button>
         </div>
       </div>
+
+      {/* Test Session Notice Banner (if user has test .io email or random usr_ id) */}
+      {(user.email.includes("realityarchitecture.io") || user.id.startsWith("usr_") || user.name === "Sovereign Operator") && (
+        <div className="p-4 rounded-xl border border-amber-500/50 bg-amber-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-200 shadow-md">
+          <div className="flex items-center gap-2.5">
+            <span className="text-amber-400 text-base">⚠️</span>
+            <div>
+              <span className="font-semibold text-amber-300">Test Account Active: </span>
+              <span>
+                You are currently signed in with placeholder email <code className="bg-amber-950/60 px-1.5 py-0.5 rounded text-amber-200 font-mono text-[11px]">{user.email}</code> and ID <code className="bg-amber-950/60 px-1.5 py-0.5 rounded text-amber-200 font-mono text-[11px]">{user.id}</code>.
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={openProfileModal}
+            className="btn-gold text-xs py-1.5 px-4 font-semibold shrink-0 cursor-pointer shadow"
+          >
+            Switch to Real Email &amp; User ID →
+          </button>
+        </div>
+      )}
+
+      {/* Edit Profile Modal */}
+      {isEditingProfile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="card p-6 sm:p-8 max-w-md w-full border-gold/70 bg-gradient-to-b from-[#141820] to-obsidian space-y-5 shadow-2xl relative">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <h3 className="font-serif text-xl text-ink font-medium">Update Member Profile</h3>
+              <button
+                type="button"
+                onClick={() => setIsEditingProfile(false)}
+                className="text-muted hover:text-ink text-sm cursor-pointer p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            {editError && (
+              <div className="p-3 rounded-lg border border-rose-500/40 bg-rose-500/10 text-rose-300 text-xs leading-relaxed">
+                {editError}
+              </div>
+            )}
+
+            <form onSubmit={handleProfileSave} className="space-y-4">
+              <div className="space-y-1">
+                <label className="font-mono text-[0.68rem] text-muted block uppercase tracking-wider">
+                  Member User ID (Your Unique Name)
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="e.g. Jeremy Ashe"
+                  className="w-full rounded-xl border border-line bg-obsidian px-4 py-2.5 text-xs text-ink placeholder:text-faint focus:border-gold focus:outline-none transition"
+                />
+                <span className="font-mono text-[0.62rem] text-faint block">
+                  This will be your unique identifier across the sanctuary (no duplicates allowed).
+                </span>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-mono text-[0.68rem] text-muted block uppercase tracking-wider">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  placeholder="e.g. jeremyashe@gmail.com"
+                  className="w-full rounded-xl border border-line bg-obsidian px-4 py-2.5 text-xs text-ink placeholder:text-faint focus:border-gold focus:outline-none transition"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-line">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingProfile(false)}
+                  className="btn-ghost text-xs py-2 px-3.5 text-muted hover:text-ink cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editSaving}
+                  className="btn-gold text-xs py-2 px-5 font-semibold cursor-pointer shadow-md disabled:opacity-50"
+                >
+                  {editSaving ? "Saving…" : "Save & Update Profile →"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ── PAID TIER HIGHLIGHT CARD (IF FREE USER) ────────────────────── */}
       {!isPaid && (

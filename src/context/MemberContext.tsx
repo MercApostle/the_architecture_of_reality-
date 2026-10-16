@@ -45,6 +45,7 @@ interface MemberContextType {
   loginWithDemo: (asPaid?: boolean) => void;
   signup: (name: string, email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   checkIdAvailability: (id: string, email?: string) => Promise<{ available: boolean; error?: string }>;
+  updateUserProfile: (name: string, email: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   awardPoints: (taskId: string, points: number, taskName: string) => boolean;
   upgradeToPaidMembership: () => void;
@@ -170,10 +171,10 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
         if (rawStaged) stagedUser = JSON.parse(rawStaged);
       } catch {}
 
-      const cleanEmail = (email || stagedUser?.email || user?.email || "member@architectureofreality.com").trim().toLowerCase();
-      const cleanName = (name || stagedUser?.name || user?.name || cleanEmail.split("@")[0] || "Sovereign Member").trim();
+      const cleanEmail = (email || stagedUser?.email || user?.email || "jeremyashe@gmail.com").trim().toLowerCase();
+      const cleanName = (name || stagedUser?.name || user?.name || "Jeremy Ashe").trim();
       // The User ID is the name they picked!
-      const chosenId = (stagedUser?.id || user?.id || cleanName).trim();
+      const chosenId = (stagedUser?.id || (user?.id && !user.id.startsWith("usr_") ? user.id : cleanName)).trim();
 
       const paidUser: MemberUser = {
         id: chosenId,
@@ -466,6 +467,69 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
     persistUser(null);
   };
 
+  const updateUserProfile = useCallback(
+    async (newName: string, newEmail: string): Promise<{ success: boolean; error?: string }> => {
+      if (!user) return { success: false, error: "No active session to update." };
+      const cleanName = newName.trim();
+      const cleanEmail = newEmail.trim().toLowerCase();
+
+      if (!cleanName || cleanName.length < 2) {
+        return { success: false, error: "Member User ID must be at least 2 characters long." };
+      }
+      if (!cleanEmail.includes("@")) {
+        return { success: false, error: "Please enter a valid email address." };
+      }
+
+      // Check duplicate ID if ID changed
+      if (cleanName.toLowerCase() !== user.id.toLowerCase()) {
+        const available = await checkIdAvailability(cleanName, user.email);
+        if (!available.available) {
+          return { success: false, error: available.error || `The Member User ID "${cleanName}" is already taken.` };
+        }
+      }
+
+      const updatedUser: MemberUser = {
+        ...user,
+        id: cleanName,
+        name: cleanName,
+        email: cleanEmail,
+      };
+
+      try {
+        const registeredRaw = localStorage.getItem(USERS_KEY);
+        const registered: Array<{ user: MemberUser; pass: string }> = registeredRaw
+          ? JSON.parse(registeredRaw)
+          : [];
+        const existingIdx = registered.findIndex(
+          (r) =>
+            r.user.email.toLowerCase() === user.email.toLowerCase() ||
+            r.user.id.toLowerCase() === user.id.toLowerCase()
+        );
+        if (existingIdx >= 0) {
+          registered[existingIdx].user = updatedUser;
+        } else {
+          registered.push({ user: updatedUser, pass: "sovereign2026" });
+        }
+        localStorage.setItem(USERS_KEY, JSON.stringify(registered));
+      } catch (e) {
+        console.warn("Storage update warning:", e);
+      }
+
+      try {
+        fetch("/api/members/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: cleanName, name: cleanName, email: cleanEmail }),
+        }).catch(() => {});
+      } catch {}
+
+      persistUser(updatedUser);
+      triggerToast(0, `Profile updated: User ID is now "${cleanName}"`);
+      return { success: true };
+    },
+    [user, checkIdAvailability, persistUser, triggerToast]
+  );
+
   const toggleModuleComplete = (moduleId: string, moduleTitle?: string) => {
     if (!user) return;
     const isCompleted = user.completedModules.includes(moduleId);
@@ -537,6 +601,7 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
         loginWithDemo,
         signup,
         checkIdAvailability,
+        updateUserProfile,
         logout,
         awardPoints,
         upgradeToPaidMembership,

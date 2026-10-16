@@ -75,8 +75,8 @@ export default function CheckoutView() {
             orderId: sessionId ? `ST-${sessionId.slice(-6).toUpperCase()}` : `AR-${Math.floor(100000 + Math.random() * 900000)}`,
             createdAt: new Date().toISOString(),
             customer: {
-              name: data.customerName || name || "Sovereign Operator",
-              email: data.customerEmail || email || "member@architectureofreality.com",
+              name: data.customerName || name || "Jeremy Ashe",
+              email: data.customerEmail || email || "jeremyashe@gmail.com",
               company: company.trim() || undefined,
             },
             items: items.length > 0 ? [...items] : [
@@ -132,8 +132,8 @@ export default function CheckoutView() {
 
   // 1-Click Demo Card Auto-fill
   const fillDemoCard = () => {
-    setName("Sovereign Operator");
-    setEmail("operator@realityarchitecture.io");
+    setName("Jeremy Ashe");
+    setEmail("jeremyashe@gmail.com");
     setCardNumber("4242 4242 4242 4242");
     setCardExpiry("12/28");
     setCardCvc("888");
