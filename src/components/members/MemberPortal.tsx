@@ -19,7 +19,6 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
     signup,
     logout,
     toggleModuleComplete,
-    upgradeToPaidMembership,
     downgradeToFree,
     bookMeetingCredit,
     getUserRank,
