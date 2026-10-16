@@ -14,7 +14,10 @@ export default function Navbar() {
   const { toggleCart, itemCount } = useCart();
   const { user, isAuthenticated, logout } = useMember();
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -63,7 +66,9 @@ export default function Navbar() {
 
         <div className="flex items-center gap-2 sm:gap-2.5">
           {/* Log In & Sign Up / Member State */}
-          {!isAuthenticated ? (
+          {!mounted ? (
+            <div className="hidden sm:flex items-center gap-2 h-7 w-20" aria-hidden="true" />
+          ) : !isAuthenticated ? (
             <div className="hidden sm:flex items-center gap-2">
               <Link
                 href="/login"
@@ -177,7 +182,9 @@ export default function Navbar() {
               </li>
             ))}
             <li className="pt-3 space-y-2">
-              {!isAuthenticated ? (
+              {!mounted ? (
+                <div className="h-9 pb-1" aria-hidden="true" />
+              ) : !isAuthenticated ? (
                 <div className="grid grid-cols-2 gap-2 pb-1">
                   <Link
                     href="/login"
