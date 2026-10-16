@@ -35,6 +35,11 @@ export default function Footer() {
                 Sovereign Checkout
               </Link>
             </li>
+            <li>
+              <Link href="/operator" className="text-muted transition hover:text-gold flex items-center gap-1.5">
+                <span>🔒</span> Operator Vault (Jeremy Ashe)
+              </Link>
+            </li>
           </ul>
         </div>
 

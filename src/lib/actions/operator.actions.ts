@@ -265,3 +265,24 @@ export async function getVideoCallBookings(): Promise<VideoCallBooking[]> {
     },
   ];
 }
+
+export async function sendTestPingEmailAction(): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  const { sendTestPingEmail } = await import('@/lib/email');
+  return sendTestPingEmail();
+}
+
+export async function recordVideoCallBookingAction(bookingData: {
+  memberId: string;
+  callNumber: number;
+  topic: string;
+  scheduledDate: string;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { sendVideoBookingAlert } = await import('@/lib/email');
+    sendVideoBookingAlert(bookingData).catch((err) => console.warn('[Video Booking Alert Failed]:', err));
+    return { success: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to record booking';
+    return { success: false, error: message };
+  }
+}

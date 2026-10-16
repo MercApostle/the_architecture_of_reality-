@@ -107,6 +107,22 @@ export async function submitAuditAction(rawInput: AuditSubmissionInput): Promise
     // Fallback storage note
   }
 
+  // 5. Send real-time email notification to Jeremy Ashe via Resend
+  try {
+    const { sendAuditNotification } = await import('@/lib/email');
+    sendAuditNotification({
+      email,
+      scores,
+      drift,
+      weakestSector,
+      operationalScope,
+      submissionId,
+      directiveHeadline: directive?.headline,
+    }).catch((err) => console.warn('[Audit Email Notification Failed]:', err));
+  } catch (err) {
+    console.warn('[Audit Email Import Warning]:', err);
+  }
+
   revalidatePath('/audit');
 
   return {

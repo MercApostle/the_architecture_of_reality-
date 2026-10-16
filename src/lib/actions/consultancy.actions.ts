@@ -108,6 +108,24 @@ export async function submitConsultancyApplication(
     createdAt: new Date().toISOString(),
   });
 
+  // Send real-time email notification to Jeremy Ashe via Resend
+  try {
+    const { sendConsultancyApplicationAlert } = await import('@/lib/email');
+    sendConsultancyApplicationAlert({
+      fullName,
+      email,
+      companyName,
+      businessSector,
+      currentWeeklyHours,
+      missionAlignment,
+      primaryBottleneck,
+      qualificationStatus,
+      applicationId,
+    }).catch((err) => console.warn('[Consultancy Email Notification Failed]:', err));
+  } catch (err) {
+    console.warn('[Consultancy Email Import Warning]:', err);
+  }
+
   revalidatePath('/meet');
   revalidatePath('/admin');
 

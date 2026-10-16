@@ -99,6 +99,16 @@ export default function Navbar() {
                   ⭐ {user.points}
                 </span>
               </Link>
+              {(user.email?.toLowerCase().includes("jeremyashe") || user.role === "operator" || user.name === "MercApostle") && (
+                <Link
+                  href="/operator"
+                  id="nav-operator-badge"
+                  title="Jeremy Ashe Operator Vault"
+                  className="inline-flex items-center gap-1 rounded-full border border-gold/60 bg-gold/15 px-2.5 py-1 font-mono text-[0.68rem] text-gold hover:bg-gold/30 font-bold transition shadow-sm"
+                >
+                  <span>⚡</span> Vault
+                </Link>
+              )}
               <button
                 type="button"
                 id="nav-logout-btn"

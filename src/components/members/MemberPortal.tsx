@@ -113,6 +113,17 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
     if (!bookingCallNumber) return;
 
     bookMeetingCredit(bookingCallNumber, meetingTopic, meetingDate);
+
+    // Asynchronously notify Jeremy Ashe via Resend
+    import("@/lib/actions/operator.actions").then(({ recordVideoCallBookingAction }) => {
+      recordVideoCallBookingAction({
+        memberId: user?.name || user?.id || "Member",
+        callNumber: bookingCallNumber,
+        topic: meetingTopic,
+        scheduledDate: meetingDate,
+      }).catch((err) => console.warn("[Booking Notification Note]:", err));
+    }).catch(() => {});
+
     setBookingCallNumber(null);
   };
 
