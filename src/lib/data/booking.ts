@@ -9,14 +9,14 @@ export interface SessionType {
   location: string;
 }
 
-export const GOOGLE_CALENDAR_URL = "https://calendar.app.google/E5bhgY2739jpbAcQ8";
-export const CAL_COM_SLUG = "jeremy-ashe-u8qpu7/15min";
-export const CAL_COM_URL = "https://cal.com/jeremy-ashe-u8qpu7/15min";
+export const GOOGLE_CALENDAR_URL = process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_URL || "https://calendar.app.google/E5bhgY2739jpbAcQ8";
+export const CAL_COM_SLUG = process.env.NEXT_PUBLIC_CALCOM_LINK || process.env.NEXT_PUBLIC_CAL_LINK || "jeremy-ashe-u8qpu7/15min";
+export const CAL_COM_URL = process.env.NEXT_PUBLIC_CAL_URL || `https://cal.com/${CAL_COM_SLUG}`;
 
-export const CAL_COM_15MIN_SLUG = "jeremy-ashe-u8qpu7/15min";
-export const CAL_COM_15MIN_URL = "https://cal.com/jeremy-ashe-u8qpu7/15min";
-export const CAL_COM_30MIN_SLUG = "jeremy-ashe-u8qpu7/30min";
-export const CAL_COM_30MIN_URL = "https://cal.com/jeremy-ashe-u8qpu7/30min";
+export const CAL_COM_15MIN_SLUG = process.env.NEXT_PUBLIC_CALCOM_LINK || process.env.NEXT_PUBLIC_CAL_LINK || "jeremy-ashe-u8qpu7/15min";
+export const CAL_COM_15MIN_URL = `https://cal.com/${CAL_COM_15MIN_SLUG}`;
+export const CAL_COM_30MIN_SLUG = process.env.NEXT_PUBLIC_CALCOM_30MIN_LINK || "jeremy-ashe-u8qpu7/30min";
+export const CAL_COM_30MIN_URL = `https://cal.com/${CAL_COM_30MIN_SLUG}`;
 
 export const SESSION_TYPES: SessionType[] = [
   {

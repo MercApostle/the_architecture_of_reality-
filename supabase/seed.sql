@@ -162,3 +162,15 @@ ON CONFLICT (id) DO UPDATE SET
   excerpt = EXCLUDED.excerpt,
   content_markdown = EXCLUDED.content_markdown,
   is_inner_circle_only = EXCLUDED.is_inner_circle_only;
+
+-- ----------------------------------------------------------------------------
+-- 5. SEED OPERATOR ELEVATION (Jeremy Ashe - jeremyashe@gmail.com)
+-- ----------------------------------------------------------------------------
+-- If Jeremy Ashe's profile already exists in public.profiles, elevate immediately
+UPDATE public.profiles
+SET 
+  role = 'operator'::user_role,
+  tier = 'sovereign_50'::membership_tier,
+  total_points = GREATEST(total_points, 10000)
+WHERE LOWER(email) = 'jeremyashe@gmail.com';
+
