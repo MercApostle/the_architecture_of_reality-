@@ -286,6 +286,34 @@ export default function CheckoutView() {
           </div>
         </div>
 
+        {/* Sovereign Membership Activated Callout Banner */}
+        {completedOrder.items.some(
+          (i) => i.id === "members-access" || i.id.includes("member")
+        ) && (
+          <div className="card p-6 sm:p-8 border-gold/70 bg-gradient-to-r from-[#1f1a14] via-[#161411] to-[#0f0e0c] shadow-[0_15px_40px_-15px_rgba(212,175,55,0.4)] relative overflow-hidden space-y-4">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold via-amber-300 to-gold" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-2.5 py-0.5 font-mono text-[0.7rem] text-gold">
+                  <span>✓</span> Sovereign Tier Activated · Paid Member Access ($50 CAD)
+                </div>
+                <h3 className="font-serif text-2xl text-ink font-medium">
+                  Welcome to the Sovereign Membership Sanctuary
+                </h3>
+                <p className="text-xs text-muted max-w-xl leading-relaxed">
+                  Your paid membership is fully active. All 3 private 30-min video consultations with Jeremy Ashe, 8 curriculum modules, and complete Reading Vault downloads are unlocked.
+                </p>
+              </div>
+              <Link
+                href="/members"
+                className="btn-gold py-3 px-6 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shrink-0"
+              >
+                <span>👑</span> Enter Sovereign Member Portal →
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Meeting Booking Unlocked Callout Banner */}
         {completedOrder.items.some(
           (i) => i.id.includes("intro-call") || i.id.includes("session") || i.category === "advisory"
@@ -334,6 +362,9 @@ export default function CheckoutView() {
                 item.id.includes("intro-call") ||
                 item.id.includes("session") ||
                 item.category === "advisory";
+              const isMembership =
+                item.id === "members-access" ||
+                item.id.includes("member");
 
               return (
                 <div
@@ -356,7 +387,14 @@ export default function CheckoutView() {
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0">
-                    {isMeeting ? (
+                    {isMembership ? (
+                      <Link
+                        href="/members"
+                        className="btn-gold text-xs py-2 px-4 flex items-center gap-2 font-semibold shadow-md"
+                      >
+                        <span>👑</span> Enter Member Portal →
+                      </Link>
+                    ) : isMeeting ? (
                       <Link
                         href="/book"
                         className="btn-gold text-xs py-2 px-4 flex items-center gap-2 font-semibold shadow-md"
@@ -373,10 +411,10 @@ export default function CheckoutView() {
                       </a>
                     )}
                     <Link
-                      href="/library"
+                      href={isMembership ? "/members" : "/library"}
                       className="btn-ghost text-xs py-2 px-3 text-muted hover:text-ink"
                     >
-                      Open in Library ↗
+                      {isMembership ? "Open Sanctuary ↗" : "Open in Library ↗"}
                     </Link>
                   </div>
                 </div>
@@ -395,11 +433,19 @@ export default function CheckoutView() {
             </button>
 
             <div className="flex items-center gap-3">
+              {completedOrder.items.some(
+                (i) => i.id === "members-access" || i.id.includes("member")
+              ) ? (
+                <Link href="/members" className="btn-gold text-xs py-2 px-4 font-semibold shadow-md">
+                  👑 Enter Member Portal →
+                </Link>
+              ) : (
+                <Link href="/audit" className="btn-gold text-xs py-2 px-4">
+                  Take Diagnostic Audit →
+                </Link>
+              )}
               <Link href="/library" className="btn-ghost text-xs py-2 px-4">
                 Explore Reading Room
-              </Link>
-              <Link href="/audit" className="btn-gold text-xs py-2 px-4">
-                Take Diagnostic Audit →
               </Link>
             </div>
           </div>
