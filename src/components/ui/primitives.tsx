@@ -81,12 +81,12 @@ export function CtaBanner({
           </svg>
         </div>
         <div className="relative flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between">
-          <div className="max-w-xl space-y-3">
+          <div className="max-w-xl space-y-3.5">
             <p className="eyebrow">The Diagnostic Audit</p>
-            <h2 className="font-serif text-3xl text-ink sm:text-4xl">{title}</h2>
-            <p className="text-muted">{body}</p>
+            <h2 className="font-serif text-3xl sm:text-5xl font-semibold text-ink leading-tight">{title}</h2>
+            <p className="text-base sm:text-lg text-muted leading-relaxed">{body}</p>
           </div>
-          <Link href={href} id={id} className="btn-gold shrink-0 px-7 py-3.5">
+          <Link href={href} id={id} className="btn-gold shrink-0 px-8 py-4 text-base font-semibold">
             {cta} <span aria-hidden>→</span>
           </Link>
         </div>

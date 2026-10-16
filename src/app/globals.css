@@ -17,14 +17,15 @@
   --color-gold-deep: #9c7f22;
   --color-emerald: #10b981;
   --color-ember: #c2584c;
-  --color-ink: #e2e8f0;
-  --color-muted: #8a96a8;
-  --color-faint: #566173;
+  --color-ink: #f3f6fa;
+  --color-muted: #9aa8bc;
+  --color-faint: #647287;
 
   /* Typography (variables injected by next/font in layout.tsx) */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-serif), ui-serif, Georgia, serif;
+  --font-display: var(--font-display), var(--font-serif), ui-serif, Georgia, serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
 
   /* Motion */
   --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -69,12 +70,21 @@
 html {
   color-scheme: dark;
   scroll-behavior: smooth;
+  font-size: 16.5px;
+}
+
+@media (min-width: 640px) {
+  html {
+    font-size: 17px;
+  }
 }
 
 body {
   background-color: var(--color-obsidian);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -98,7 +108,7 @@ body {
   }
 
   .eyebrow {
-    @apply font-mono text-[0.68rem] tracking-[0.28em] text-gold uppercase;
+    @apply font-mono text-xs sm:text-[0.76rem] tracking-[0.24em] text-gold font-semibold uppercase;
   }
 
   .card {
@@ -111,7 +121,7 @@ body {
 
   .btn-gold,
   .btn-ghost {
-    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium tracking-wide transition duration-300 disabled:cursor-not-allowed disabled:opacity-40 select-none;
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-full px-6 py-3 text-sm sm:text-base font-semibold tracking-wide transition duration-300 disabled:cursor-not-allowed disabled:opacity-40 select-none;
     touch-action: manipulation;
   }
 
@@ -159,16 +169,16 @@ body {
 
   /* Long-form reading typography (Library + Dispatches) */
   .prose-reality {
-    @apply max-w-none text-[1.05rem] leading-[1.85] text-ink/85;
+    @apply max-w-none text-[1.12rem] sm:text-[1.22rem] leading-[1.92] text-ink/90;
   }
   .prose-reality h2 {
-    @apply mt-14 mb-4 font-serif text-3xl font-medium text-ink;
+    @apply mt-14 mb-5 font-serif text-3xl sm:text-4xl font-semibold text-ink;
   }
   .prose-reality h3 {
-    @apply mt-10 mb-3 font-serif text-2xl text-gold;
+    @apply mt-10 mb-4 font-serif text-2xl sm:text-3xl text-gold font-medium;
   }
   .prose-reality p {
-    @apply my-5;
+    @apply my-6;
   }
   .prose-reality strong {
     @apply font-semibold text-ink;

@@ -51,10 +51,10 @@ export default function Navbar() {
                 <Link
                   id={`nav-${l.label.toLowerCase().replace(/\s+/g, "-")}`}
                   href={l.href}
-                  className={`relative rounded-full px-3 py-1 font-mono text-xs tracking-wider transition duration-200 cursor-pointer ${
+                  className={`relative rounded-full px-3.5 py-1.5 font-mono text-[0.8rem] tracking-wider transition duration-200 cursor-pointer ${
                     active
-                      ? "border border-gold/70 bg-gradient-to-b from-gold/25 to-gold/10 text-gold font-medium shadow-[0_0_12px_rgba(212,175,55,0.3)] ring-1 ring-gold/40"
-                      : "border border-transparent text-muted hover:text-ink hover:border-gold/30 hover:bg-gold/5"
+                      ? "border border-gold/70 bg-gradient-to-b from-gold/25 to-gold/10 text-gold font-semibold shadow-[0_0_12px_rgba(212,175,55,0.3)] ring-1 ring-gold/40"
+                      : "border border-transparent text-muted hover:text-ink hover:border-gold/30 hover:bg-gold/5 font-medium"
                   }`}
                 >
                   {l.label}
@@ -73,14 +73,14 @@ export default function Navbar() {
               <Link
                 href="/login"
                 id="nav-login-btn"
-                className="font-mono text-xs text-muted hover:text-gold transition px-2 py-1"
+                className="font-mono text-sm text-muted hover:text-gold transition px-2.5 py-1 font-medium"
               >
                 Log In
               </Link>
               <Link
                 href="/signup"
                 id="nav-signup-btn"
-                className="rounded-full border border-gold/70 bg-gold/10 px-3 py-1 font-mono text-[0.68rem] tracking-wider text-gold uppercase transition hover:bg-gold hover:text-obsidian hover:shadow-[0_0_12px_rgba(212,175,55,0.3)] font-semibold"
+                className="rounded-full border border-gold/70 bg-gold/10 px-3.5 py-1.5 font-mono text-[0.76rem] tracking-wider text-gold uppercase transition hover:bg-gold hover:text-obsidian hover:shadow-[0_0_12px_rgba(212,175,55,0.3)] font-semibold"
               >
                 Sign Up
               </Link>
@@ -91,11 +91,11 @@ export default function Navbar() {
                 href="/members"
                 id="nav-member-badge"
                 title={`Member: ${user.name} (${user.points} pts)`}
-                className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 font-mono text-[0.68rem] tracking-wider text-gold hover:border-gold hover:bg-gold/20 transition"
+                className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 bg-gold/10 px-3.5 py-1.5 font-mono text-[0.76rem] tracking-wider text-gold hover:border-gold hover:bg-gold/20 transition font-medium"
               >
-                <span className="size-1.5 rounded-full bg-emerald animate-pulse-gold" />
-                <span className="max-w-[85px] truncate font-semibold">{user.name.split(" ")[0]}</span>
-                <span className="bg-gold/20 px-1.5 py-0.5 rounded-full text-[0.6rem] font-bold text-gold">
+                <span className="size-2 rounded-full bg-emerald animate-pulse-gold" />
+                <span className="max-w-[95px] truncate font-semibold">{user.name.split(" ")[0]}</span>
+                <span className="bg-gold/20 px-2 py-0.5 rounded-full text-[0.68rem] font-bold text-gold">
                   ⭐ {user.points}
                 </span>
               </Link>
@@ -103,7 +103,7 @@ export default function Navbar() {
                 type="button"
                 id="nav-logout-btn"
                 onClick={logout}
-                className="font-mono text-[0.68rem] text-muted hover:text-gold transition cursor-pointer px-1 py-1"
+                className="font-mono text-xs text-muted hover:text-gold transition cursor-pointer px-1 py-1 font-medium"
                 title="Sign Out"
               >
                 Sign Out
