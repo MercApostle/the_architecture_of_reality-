@@ -70,7 +70,16 @@ export function CtaBanner({
     <section className="container-x">
       <div className="relative overflow-hidden rounded-3xl border border-gold/30 bg-gradient-to-br from-charcoal via-charcoal to-[#1a1608] p-10 sm:p-14">
         <div className="pointer-events-none absolute -right-24 -bottom-24 size-80 rounded-full bg-gold/15 blur-3xl" />
-        <div className="pointer-events-none absolute top-0 right-0 font-serif text-[16rem] leading-none text-gold/5 select-none">⚡</div>
+        {/* Subtle, elegant vector sacred geometry watermark (no emoji bleed on mobile) */}
+        <div className="pointer-events-none absolute -top-8 -right-8 size-64 sm:size-80 opacity-[0.08] text-gold select-none" aria-hidden="true">
+          <svg viewBox="0 0 200 200" fill="none" className="w-full h-full stroke-current">
+            <circle cx="100" cy="100" r="90" strokeWidth="1" strokeDasharray="4 4" />
+            <circle cx="100" cy="100" r="70" strokeWidth="1" />
+            <circle cx="100" cy="100" r="50" strokeWidth="0.8" strokeDasharray="2 2" />
+            <circle cx="100" cy="100" r="30" strokeWidth="0.8" />
+            <polygon points="100,10 125,75 190,100 125,125 100,190 75,125 10,100 75,75" strokeWidth="0.8" />
+          </svg>
+        </div>
         <div className="relative flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between">
           <div className="max-w-xl space-y-3">
             <p className="eyebrow">The Diagnostic Audit</p>
@@ -98,7 +107,7 @@ export function BookCover({
   subtitle: string;
   volumeLabel?: string;
 }) {
-  const numeral = number === 0 ? "⚡" : number === 1 ? "I" : number === 2 ? "II" : "III";
+  const numeral = number === 0 ? "0" : number === 1 ? "I" : number === 2 ? "II" : "III";
   const label = volumeLabel ?? (number === 0 ? "Foundation Volume" : `Book ${numeral}`);
 
   return (

@@ -13,8 +13,19 @@ export const NAV_LINKS = [
 export function BrandMark({ compact = false }: { compact?: boolean }) {
   return (
     <span className="group inline-flex items-center gap-2.5">
-      <span className="relative grid size-8 place-items-center rounded-lg border border-gold/40 bg-gold/5 text-gold transition group-hover:border-gold group-hover:shadow-[0_0_20px_-4px_rgba(212,175,55,0.6)]">
-        <span aria-hidden className="text-base leading-none">⚡</span>
+      <span className="relative grid size-8 place-items-center rounded-lg border border-gold/40 bg-gold/5 text-gold transition group-hover:border-gold group-hover:bg-gold/10 group-hover:shadow-[0_0_20px_-4px_rgba(212,175,55,0.6)]">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="size-4 text-gold drop-shadow-[0_0_6px_rgba(212,175,55,0.4)]"
+          aria-hidden="true"
+        >
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" fillOpacity="0.25" />
+        </svg>
       </span>
       {!compact && (
         <span className="flex flex-col leading-none">

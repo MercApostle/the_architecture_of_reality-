@@ -54,7 +54,14 @@ export function VesselGlyph({ className = "" }: { className?: string }) {
 
         <circle cx="200" cy="200" r="70" fill="url(#core)" />
         <circle cx="200" cy="200" r="46" fill="none" stroke="#d4af37" strokeWidth="0.6" opacity="0.6" />
-        <text x="200" y="214" textAnchor="middle" fontSize="40" fill="#e9c766">⚡</text>
+        <g transform="translate(181, 181) scale(1.6)" filter="url(#glow)">
+          <polygon
+            points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"
+            fill="#e9c766"
+            stroke="#d4af37"
+            strokeWidth="0.6"
+          />
+        </g>
       </svg>
     </div>
   );
