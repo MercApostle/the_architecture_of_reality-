@@ -107,9 +107,9 @@ export async function submitAuditAction(rawInput: AuditSubmissionInput): Promise
     // Fallback storage note
   }
 
-  // 5. Send real-time email notification to Jeremy Ashe via Resend
+  // 5. Send real-time email notification to Jeremy Ashe and applicant via Resend
   try {
-    const { sendAuditNotification } = await import('@/lib/email');
+    const { sendAuditNotification, sendAuditApplicantEmail } = await import('@/lib/email');
     sendAuditNotification({
       email,
       scores,
@@ -119,6 +119,17 @@ export async function submitAuditAction(rawInput: AuditSubmissionInput): Promise
       submissionId,
       directiveHeadline: directive?.headline,
     }).catch((err) => console.warn('[Audit Email Notification Failed]:', err));
+
+    if (email && directive) {
+      sendAuditApplicantEmail({
+        toEmail: email,
+        scores,
+        drift,
+        weakestSector,
+        directive,
+        recommendedPath,
+      }).catch((err) => console.warn('[Applicant Email Delivery Note]:', err));
+    }
   } catch (err) {
     console.warn('[Audit Email Import Warning]:', err);
   }
