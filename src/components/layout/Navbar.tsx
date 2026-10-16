@@ -38,7 +38,7 @@ export default function Navbar() {
       }`}
     >
       <nav className="container-x flex h-16 items-center justify-between" aria-label="Primary">
-        <Link href="/" id="nav-home" aria-label="The Architecture of Reality — Home">
+        <Link href="/" id="nav-home" onClick={() => setOpen(false)} aria-label="The Architecture of Reality — Home">
           <BrandMark />
         </Link>
 
@@ -184,13 +184,23 @@ export default function Navbar() {
       {open && (
         <div className="border-t border-line md:hidden">
           <ul className="container-x flex flex-col py-4">
-            {NAV_LINKS.map((l) => (
-              <li key={l.href}>
-                <Link href={l.href} className="block py-3 font-serif text-xl text-ink hover:text-gold">
-                  {l.label}
-                </Link>
-              </li>
-            ))}
+            {NAV_LINKS.map((l) => {
+              const active = pathname === l.href || pathname.startsWith(`${l.href}/`);
+              return (
+                <li key={l.href}>
+                  <Link
+                    href={l.href}
+                    onClick={() => setOpen(false)}
+                    className={`block py-3 font-serif text-xl transition flex items-center justify-between ${
+                      active ? "text-gold font-medium pl-2 border-l-2 border-gold" : "text-ink hover:text-gold"
+                    }`}
+                  >
+                    <span>{l.label}</span>
+                    {active && <span className="font-mono text-xs text-gold/80">Active</span>}
+                  </Link>
+                </li>
+              );
+            })}
             <li className="pt-3 space-y-2">
               {!mounted ? (
                 <div className="h-9 pb-1" aria-hidden="true" />
@@ -263,7 +273,11 @@ export default function Navbar() {
                   </span>
                 )}
               </button>
-              <Link href="/audit" className="btn-ghost w-full text-center block text-xs py-2 text-gold border-gold/40">
+              <Link
+                href="/audit"
+                onClick={() => setOpen(false)}
+                className="btn-ghost w-full text-center block text-xs py-2 text-gold border-gold/40"
+              >
                 Audit
               </Link>
             </li>
