@@ -4,7 +4,7 @@ const OPERATOR_EMAIL = process.env.CONTACT_NOTIFICATION_EMAIL || 'jeremyashe@gma
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'The Architecture of Reality <onboarding@resend.dev>';
 
 function getResendClient(): Resend | null {
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey = process.env.RESEND_API_KEY || process.env.Resend_API_Key || process.env.RESEND_KEY;
   if (!apiKey || apiKey.trim().length === 0) {
     return null;
   }
