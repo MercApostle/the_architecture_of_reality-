@@ -47,6 +47,7 @@ interface MemberContextType {
   logout: () => void;
   awardPoints: (taskId: string, points: number, taskName: string) => boolean;
   upgradeToPaidMembership: () => void;
+  activatePaidMembership: (email?: string, name?: string) => MemberUser;
   downgradeToFree: () => void;
   bookMeetingCredit: (callNumber: number, topic?: string, scheduledDate?: string) => boolean;
   toggleModuleComplete: (moduleId: string, moduleTitle?: string) => void;
@@ -78,22 +79,6 @@ const DEMO_PAID_USER: MemberUser = {
     { callNumber: 2, status: "available" },
     { callNumber: 3, status: "available" },
   ],
-};
-
-const DEMO_FREE_USER: MemberUser = {
-  id: "usr_free_demo",
-  name: "Julian Cross",
-  email: "julian@freeaccount.com",
-  tier: "free",
-  tierLabel: "Free Member Account",
-  memberSince: "October 2026",
-  points: 75,
-  completedTasks: ["welcome_bonus", "read_blog_shav-empty-words"],
-  completedModules: ["m1"],
-  bookmarkedResources: [],
-  meetingCreditsTotal: 0,
-  meetingCreditsRemaining: 0,
-  bookedMeetings: [],
 };
 
 const SESSION_KEY = "ar_member_session_v2";
@@ -174,38 +159,61 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
     [user, persistUser, triggerToast]
   );
 
-  // Upgrade Free Member to Paid $50 Member Tier
+  // Activate or create a Paid $50 Sovereign Member
+  const activatePaidMembership = useCallback(
+    (email?: string, name?: string): MemberUser => {
+      const cleanEmail = (email || user?.email || "member@architectureofreality.com").trim().toLowerCase();
+      const cleanName = (name || user?.name || cleanEmail.split("@")[0] || "Sovereign Member").trim();
+
+      const paidUser: MemberUser = {
+        id: user?.id || `usr_${Date.now()}`,
+        name: cleanName,
+        email: cleanEmail,
+        tier: "paid",
+        tierLabel: "Sovereign Member ($50 Tier)",
+        memberSince: user?.memberSince || new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+        points: (user?.points || 0) + 500,
+        completedTasks: Array.from(new Set([...(user?.completedTasks || []), "welcome_bonus", "upgrade_membership"])),
+        completedModules: user?.completedModules || [],
+        bookmarkedResources: user?.bookmarkedResources || ["blueprint-pdf"],
+        meetingCreditsTotal: 3,
+        meetingCreditsRemaining: user?.meetingCreditsRemaining ? Math.max(3, user.meetingCreditsRemaining) : 3,
+        bookedMeetings: [
+          { callNumber: 1, status: "available" },
+          { callNumber: 2, status: "available" },
+          { callNumber: 3, status: "available" },
+        ],
+      };
+
+      try {
+        const registeredRaw = localStorage.getItem(USERS_KEY);
+        const registered: Array<{ user: MemberUser; pass: string }> = registeredRaw ? JSON.parse(registeredRaw) : [];
+        const existingIdx = registered.findIndex((r) => r.user.email.toLowerCase() === cleanEmail);
+        if (existingIdx >= 0) {
+          registered[existingIdx].user = paidUser;
+        } else {
+          registered.push({ user: paidUser, pass: "sovereign2026" });
+        }
+        localStorage.setItem(USERS_KEY, JSON.stringify(registered));
+        localStorage.setItem("aor_membership_tier", "paid");
+        localStorage.setItem("aor_paid_member_active", "true");
+      } catch (e) {
+        console.warn("Storage sync notice:", e);
+      }
+
+      persistUser(paidUser);
+      triggerToast(500, "Sovereign Membership Confirmed — 3 Video Calls & Full Vault Unlocked!");
+      return paidUser;
+    },
+    [user, persistUser, triggerToast]
+  );
+
+  // Upgrade wrapper
   const upgradeToPaidMembership = useCallback(() => {
-    if (!user) return;
+    activatePaidMembership();
+  }, [activatePaidMembership]);
 
-    const alreadyPaid = user.tier === "paid";
-    if (alreadyPaid) return;
-
-    const bonusPoints = 200;
-    const updatedTasks = user.completedTasks.includes("upgrade_membership")
-      ? user.completedTasks
-      : [...user.completedTasks, "upgrade_membership"];
-
-    const updatedUser: MemberUser = {
-      ...user,
-      tier: "paid",
-      tierLabel: "Sovereign Member ($50 Tier)",
-      points: user.points + bonusPoints,
-      completedTasks: updatedTasks,
-      meetingCreditsTotal: 3,
-      meetingCreditsRemaining: 3,
-      bookedMeetings: [
-        { callNumber: 1, status: "available" },
-        { callNumber: 2, status: "available" },
-        { callNumber: 3, status: "available" },
-      ],
-    };
-
-    persistUser(updatedUser);
-    triggerToast(bonusPoints, "Upgraded to Sovereign Membership ($50 Tier) — 3 Video Calls Unlocked!");
-  }, [user, persistUser, triggerToast]);
-
-  // Downgrade or Reset to Free Tier (for testing and tier resets)
+  // Downgrade helper
   const downgradeToFree = useCallback(() => {
     if (!user) return;
     const updatedUser: MemberUser = {
@@ -216,13 +224,8 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
       meetingCreditsRemaining: 0,
       bookedMeetings: [],
     };
-    try {
-      localStorage.removeItem("aor_paid_member_active");
-      localStorage.removeItem("aor_membership_tier");
-    } catch {}
     persistUser(updatedUser);
-    triggerToast(0, "Account reset to Free Member Tier");
-  }, [user, persistUser, triggerToast]);
+  }, [user, persistUser]);
 
   // Book a video call credit
   const bookMeetingCredit = useCallback(
@@ -251,10 +254,10 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
       };
 
       persistUser(updatedUser);
-      awardPoints(`booked_call_${callNumber}`, 75, `Scheduled 30-Min Video Conference #${callNumber}`);
+      triggerToast(0, `Video Call #${callNumber} Reserved — Calendar Confirmation Dispatched`);
       return true;
     },
-    [user, persistUser, awardPoints]
+    [user, persistUser, triggerToast]
   );
 
   const login = async (email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
@@ -264,10 +267,6 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
     // Check demo credentials
     if (cleanEmail === "member@architectureofreality.com") {
       persistUser(DEMO_PAID_USER);
-      return { success: true };
-    }
-    if (cleanEmail === "julian@freeaccount.com") {
-      persistUser(DEMO_FREE_USER);
       return { success: true };
     }
 
@@ -281,6 +280,12 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
       const found = registered.find((r) => r.user.email.toLowerCase() === cleanEmail);
       if (found) {
         if (found.pass === pass || pass === "sovereign2026") {
+          if (found.user.tier !== "paid") {
+            return {
+              success: false,
+              error: "An account was located, but no active $50 CAD Sovereign Membership is associated with this email. Please unlock membership below to enter.",
+            };
+          }
           persistUser(found.user);
           return { success: true };
         }
@@ -288,50 +293,15 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
       }
     } catch {}
 
-    // Auto-create free member if valid format
-    if (cleanEmail.includes("@") && pass.length >= 6) {
-      const newUser: MemberUser = {
-        id: `usr_${Date.now()}`,
-        name: cleanEmail.split("@")[0].replace(/[^a-zA-Z]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-        email: cleanEmail,
-        tier: "free",
-        tierLabel: "Free Member Account",
-        memberSince: new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }),
-        points: 50,
-        completedTasks: ["welcome_bonus"],
-        completedModules: [],
-        bookmarkedResources: [],
-        meetingCreditsTotal: 0,
-        meetingCreditsRemaining: 0,
-        bookedMeetings: [],
-      };
-
-      try {
-        const registeredRaw = localStorage.getItem(USERS_KEY);
-        const registered: Array<{ user: MemberUser; pass: string }> = registeredRaw
-          ? JSON.parse(registeredRaw)
-          : [];
-        registered.push({ user: newUser, pass });
-        localStorage.setItem(USERS_KEY, JSON.stringify(registered));
-      } catch {}
-
-      persistUser(newUser);
-      triggerToast(50, "Welcome! Free Account Initialized (+50 Pts)");
-      return { success: true };
-    }
-
     return {
       success: false,
-      error: "Account not found. Please check your credentials or click 'Instant Demo Access'.",
+      error: "No active Sovereign Membership found for this email. Membership is required to enter the vault. Please unlock your access below for $50 CAD.",
     };
   };
 
-  const loginWithDemo = (asPaid: boolean = true) => {
-    if (asPaid) {
-      persistUser(DEMO_PAID_USER);
-    } else {
-      persistUser(DEMO_FREE_USER);
-    }
+  const loginWithDemo = () => {
+    // Only paid members can enter the portal
+    persistUser(DEMO_PAID_USER);
   };
 
   const signup = async (
@@ -349,40 +319,47 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
       return { success: false, error: "Password must be at least 6 characters long." };
     }
 
-    // Default registration is FREE account with 50 welcome points
-    const newUser: MemberUser = {
-      id: `usr_${Date.now()}`,
-      name: name.trim() || "Sovereign Member",
-      email: cleanEmail,
-      tier: "free",
-      tierLabel: "Free Member Account",
-      memberSince: new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }),
-      points: 50,
-      completedTasks: ["welcome_bonus"],
-      completedModules: [],
-      bookmarkedResources: [],
-      meetingCreditsTotal: 0,
-      meetingCreditsRemaining: 0,
-      bookedMeetings: [],
-    };
-
+    // Stage paid member credentials so upon checkout return they can sign in seamlessly
     try {
       const registeredRaw = localStorage.getItem(USERS_KEY);
       const registered: Array<{ user: MemberUser; pass: string }> = registeredRaw
         ? JSON.parse(registeredRaw)
         : [];
 
-      const exists = registered.some((r) => r.user.email.toLowerCase() === cleanEmail);
-      if (exists) {
-        return { success: false, error: "An account with this email already exists. Please log in." };
+      const existing = registered.find((r) => r.user.email.toLowerCase() === cleanEmail);
+      if (existing && existing.user.tier === "paid") {
+        return { success: false, error: "A paid account already exists for this email. Please log in." };
       }
 
-      registered.push({ user: newUser, pass });
+      const pendingUser: MemberUser = {
+        id: `usr_${Date.now()}`,
+        name: name.trim() || cleanEmail.split("@")[0],
+        email: cleanEmail,
+        tier: "paid",
+        tierLabel: "Sovereign Member ($50 Tier)",
+        memberSince: new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+        points: 500,
+        completedTasks: ["welcome_bonus", "upgrade_membership"],
+        completedModules: [],
+        bookmarkedResources: ["blueprint-pdf"],
+        meetingCreditsTotal: 3,
+        meetingCreditsRemaining: 3,
+        bookedMeetings: [
+          { callNumber: 1, status: "available" },
+          { callNumber: 2, status: "available" },
+          { callNumber: 3, status: "available" },
+        ],
+      };
+
+      if (existing) {
+        existing.user = pendingUser;
+        existing.pass = pass;
+      } else {
+        registered.push({ user: pendingUser, pass });
+      }
       localStorage.setItem(USERS_KEY, JSON.stringify(registered));
     } catch {}
 
-    persistUser(newUser);
-    triggerToast(50, "Account Registered! Free Membership Activated (+50 Pts)");
     return { success: true };
   };
 
@@ -463,6 +440,7 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
         logout,
         awardPoints,
         upgradeToPaidMembership,
+        activatePaidMembership,
         downgradeToFree,
         bookMeetingCredit,
         toggleModuleComplete,

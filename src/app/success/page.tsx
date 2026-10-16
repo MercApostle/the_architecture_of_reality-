@@ -10,19 +10,25 @@ function SuccessContent() {
   const sessionId = searchParams.get("session_id");
   const isDemoMode = searchParams.get("demo_mode") === "true" || searchParams.get("demo") === "true";
   const [copied, setCopied] = useState(false);
-  const { upgradeToPaidMembership } = useMember();
+  const [activatedName, setActivatedName] = useState<string | null>(null);
+  const { activatePaidMembership } = useMember();
 
   useEffect(() => {
     // Elevate member account upon confirmed checkout
-    upgradeToPaidMembership();
-    try {
-      localStorage.setItem("aor_membership_tier", "paid");
-      localStorage.setItem("aor_paid_member_active", "true");
-      localStorage.setItem("aor_member_points", "500");
-    } catch {
-      // Storage access may be restricted in private browsing
+    if (sessionId) {
+      fetch(`/api/checkout/session?session_id=${sessionId}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.customerName) setActivatedName(data.customerName);
+          activatePaidMembership(data.customerEmail, data.customerName);
+        })
+        .catch(() => {
+          activatePaidMembership();
+        });
+    } else {
+      activatePaidMembership();
     }
-  }, [upgradeToPaidMembership]);
+  }, [sessionId, activatePaidMembership]);
 
   const copySessionId = () => {
     if (!sessionId) return;
@@ -64,7 +70,7 @@ function SuccessContent() {
           {/* Primary Header */}
           <div className="mt-4 text-center">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif text-[#F5F5F7] tracking-tight">
-              Order & Calibration Confirmed
+              {activatedName ? `Welcome, ${activatedName}` : "Order & Calibration Confirmed"}
             </h1>
             <p className="mt-2 text-sm sm:text-base text-stone-300 font-sans max-w-lg mx-auto leading-relaxed">
               Your payment has been successfully recorded through Stripe. Your access covenants, digital manuals, and sovereign membership privileges are now activated.

@@ -19,7 +19,6 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
     signup,
     logout,
     toggleModuleComplete,
-    downgradeToFree,
     bookMeetingCredit,
     getUserRank,
   } = useMember();
@@ -56,7 +55,10 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
     } else {
       const res = await signup(name, email, password);
       if (!res.success) {
-        setAuthError(res.error || "Failed to create free account.");
+        setAuthError(res.error || "Failed to initiate registration.");
+      } else {
+        // Automatically add $50 Sovereign Membership to cart and open checkout
+        handleCartUpgrade();
       }
     }
 
@@ -333,48 +335,31 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
     );
   }
 
-  // ── UNAUTHENTICATED: SIGN IN / REGISTER GATE ───────────────────────────
+  // ── UNAUTHENTICATED: PAID MEMBER GATE ───────────────────────────────────
   if (!isAuthenticated || !user) {
     return (
-      <div className="container-x py-16 lg:py-24 max-w-xl mx-auto">
-        <div className="card p-8 sm:p-12 border-gold/40 bg-gradient-to-b from-charcoal via-charcoal to-[#16130b] space-y-8 relative overflow-hidden shadow-[0_0_50px_-10px_rgba(212,175,55,0.15)]">
+      <div className="container-x py-16 lg:py-24 max-w-xl mx-auto animate-fade-up">
+        <div className="card p-8 sm:p-12 border-gold/40 bg-gradient-to-b from-charcoal via-charcoal to-[#16130b] space-y-8 relative overflow-hidden shadow-[0_0_50px_-10px_rgba(212,175,55,0.2)]">
           <div className="pointer-events-none absolute -top-24 -right-24 size-64 rounded-full bg-gold/15 blur-3xl" />
 
           {/* Header */}
           <div className="text-center space-y-3 relative">
-            <div className="mx-auto size-12 rounded-2xl border border-gold/50 bg-gold/10 text-gold flex items-center justify-center text-xl shadow-[0_0_20px_-3px_rgba(212,175,55,0.4)]">
+            <div className="mx-auto size-14 rounded-2xl border border-gold/50 bg-gold/10 text-gold flex items-center justify-center text-2xl shadow-[0_0_20px_-3px_rgba(212,175,55,0.4)]">
               🔒
             </div>
-            <span className="eyebrow block">Sovereign Member Portal</span>
+            <span className="eyebrow block">Sovereign Member Sanctuary</span>
             <h1 className="font-serif text-3xl sm:text-4xl text-ink font-medium">
               {mode === "signin" ? (
-                <>Member <span className="text-gradient-gold italic">Log In</span></>
+                <>Member <span className="text-gradient-gold italic">Sign In</span></>
               ) : (
-                <>Create <span className="text-gradient-gold italic">Free Account</span></>
+                <>Join <span className="text-gradient-gold italic">Sovereign Membership</span></>
               )}
             </h1>
-            <p className="text-xs sm:text-sm text-muted leading-relaxed">
-              Create a free account to track your reading, earn gamification points, and unlock Sovereign Member Access ($50 CAD) with three 1-on-1 video conference calls with Jeremy Ashe.
+            <p className="text-xs sm:text-sm text-muted leading-relaxed max-w-md mx-auto">
+              {mode === "signin"
+                ? "Enter your credentials to access your private video conferences, 8-module curriculum, and unabridged vault."
+                : "Membership is exclusive to Sovereign Operators ($50 CAD). Includes three private 1-on-1 video calls with Jeremy Ashe and full curriculum access."}
             </p>
-          </div>
-
-          {/* Sample Free Preview Option */}
-          <div className="space-y-2">
-            <button
-              type="button"
-              id="member-demo-free-btn"
-              onClick={() => loginWithDemo(false)}
-              className="w-full btn-ghost py-2.5 text-[0.72rem] font-semibold cursor-pointer border-line text-muted hover:text-gold hover:border-gold/40 flex items-center justify-center gap-2"
-            >
-              <span>⚡</span> Explore Sample Free Account (Preview)
-            </button>
-          </div>
-
-          <div className="relative flex items-center justify-center">
-            <div className="border-t border-line w-full" />
-            <span className="bg-charcoal px-3 font-mono text-[0.65rem] text-faint uppercase tracking-wider relative">
-              Or Use Your Credentials
-            </span>
           </div>
 
           {/* Mode Switcher Tabs */}
@@ -386,13 +371,13 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
                 setMode("signin");
                 setAuthError("");
               }}
-              className={`py-2 text-xs font-mono tracking-wider rounded-lg transition cursor-pointer ${
+              className={`py-2.5 text-xs font-mono tracking-wider rounded-lg transition cursor-pointer ${
                 mode === "signin"
                   ? "bg-gold text-obsidian font-bold shadow-sm"
                   : "text-muted hover:text-ink"
               }`}
             >
-              Log In
+              Sign In
             </button>
             <button
               type="button"
@@ -401,21 +386,57 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
                 setMode("signup");
                 setAuthError("");
               }}
-              className={`py-2 text-xs font-mono tracking-wider rounded-lg transition cursor-pointer ${
+              className={`py-2.5 text-xs font-mono tracking-wider rounded-lg transition cursor-pointer ${
                 mode === "signup"
                   ? "bg-gold text-obsidian font-bold shadow-sm"
                   : "text-muted hover:text-ink"
               }`}
             >
-              Sign Up (Free)
+              Join ($50 CAD)
             </button>
           </div>
+
+          {/* Membership Deliverables Box on Join Tab */}
+          {mode === "signup" && (
+            <div className="p-4 rounded-xl border border-gold/40 bg-gold/5 space-y-2.5 text-xs">
+              <span className="font-mono text-[0.65rem] text-gold uppercase tracking-wider font-bold block">
+                ⚡ What You Unlock ($50 CAD One-Time):
+              </span>
+              <ul className="space-y-1.5 text-ink/90">
+                <li className="flex items-center gap-2">
+                  <span className="text-gold font-bold">✓</span>
+                  <span><strong>Three (3) 30-min 1-on-1 Video Conferences</strong> with Jeremy Ashe</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-gold font-bold">✓</span>
+                  <span><strong>Full 8-Module Video Curriculum</strong> (Dynamic Balance & Operating System)</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-gold font-bold">✓</span>
+                  <span><strong>Unabridged Digital PDF Vault</strong> (All 3 Trilogy Manuscripts)</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-gold font-bold">✓</span>
+                  <span><strong>500 Bonus Points</strong> & Sovereign Operator Status</span>
+                </li>
+              </ul>
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleAuthSubmit} className="space-y-4">
             {authError && (
-              <div className="p-3 rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 text-xs">
-                {authError}
+              <div className="p-3.5 rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 text-xs leading-relaxed space-y-2">
+                <p>{authError}</p>
+                {authError.includes("unlock") && (
+                  <button
+                    type="button"
+                    onClick={handleCartUpgrade}
+                    className="text-gold underline hover:text-gold-bright font-mono text-[11px] block cursor-pointer"
+                  >
+                    Unlock Sovereign Membership ($50 CAD) Now →
+                  </button>
+                )}
               </div>
             )}
 
@@ -429,7 +450,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Eleanor Vance"
+                  placeholder="e.g. Jeremy Ashe"
                   className="w-full rounded-xl border border-line bg-obsidian px-4 py-2.5 text-xs text-ink placeholder:text-faint focus:border-gold focus:outline-none transition"
                 />
               </div>
@@ -470,23 +491,27 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
               type="submit"
               id="member-submit-auth-btn"
               disabled={authSubmitting}
-              className="btn-gold w-full py-3 text-xs font-semibold cursor-pointer shadow-md disabled:opacity-50 mt-2"
+              className="btn-gold w-full py-3.5 text-xs font-semibold cursor-pointer shadow-lg disabled:opacity-50 mt-2"
             >
               {authSubmitting
-                ? "Authenticating…"
+                ? "Securing Channel…"
                 : mode === "signin"
-                ? "Log In to Account →"
-                : "Create Free Account (+50 Pts) →"}
+                ? "Enter Sovereign Member Portal →"
+                : "Proceed to Secure Stripe Checkout ($50 CAD) →"}
             </button>
           </form>
 
-          {/* Footer note */}
+          {/* Test Preview Demo (for development verification) */}
           <div className="pt-2 text-center space-y-2 border-t border-line text-xs text-muted">
-            <p className="text-[0.72rem]">
-              Free account gives you points tracking across blogs &amp; assessments. Upgrading to Paid Access ($50 CAD) includes 3 video calls with Jeremy.
-            </p>
+            <button
+              type="button"
+              onClick={() => loginWithDemo(true)}
+              className="font-mono text-[0.68rem] text-muted hover:text-gold transition cursor-pointer"
+            >
+              ⚡ Instant Developer Preview (Marcus Sterling Paid Session)
+            </button>
             <p className="text-[0.68rem] text-faint">
-              Need assistance? <Link href="/contact" className="text-gold hover:underline">Contact Jeremy directly</Link>.
+              Need assistance? <Link href="/contact" className="text-gold hover:underline">Contact Advisory directly</Link>.
             </p>
           </div>
         </div>
@@ -528,35 +553,13 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
 
         {/* Member Actions */}
         <div className="flex flex-wrap items-center gap-3 shrink-0">
-          {!isPaid ? (
-            <button
-              type="button"
-              id="banner-upgrade-btn"
-              onClick={handleCartUpgrade}
-              className="btn-gold text-xs px-4 py-2.5 flex items-center gap-2 shadow-[0_0_15px_-3px_rgba(212,175,55,0.5)] cursor-pointer"
-            >
-              <span>⭐</span> Upgrade to Paid Access ($50 CAD)
-            </button>
-          ) : (
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setActiveTab("meetings")}
-                className="btn-gold text-xs px-4 py-2 flex items-center gap-2 shadow-sm cursor-pointer"
-              >
-                <span>📅</span> {user.meetingCreditsRemaining} Video Calls Remaining
-              </button>
-              <button
-                type="button"
-                id="reset-tier-btn"
-                onClick={downgradeToFree}
-                title="Reset tier to free to test the real purchase flow"
-                className="text-[0.68rem] font-mono text-muted hover:text-gold border border-line bg-obsidian/80 px-2.5 py-1.5 rounded transition cursor-pointer"
-              >
-                ↺ Reset to Free (Test)
-              </button>
-            </div>
-          )}
+          <button
+            type="button"
+            onClick={() => setActiveTab("meetings")}
+            className="btn-gold text-xs px-4 py-2.5 flex items-center gap-2 shadow-md cursor-pointer"
+          >
+            <span>📅</span> {user.meetingCreditsRemaining} Video Calls Remaining
+          </button>
 
           <button
             type="button"
@@ -815,28 +818,8 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
             </p>
           </div>
 
-          {!isPaid ? (
-            <div className="card p-8 border-gold/60 bg-gradient-to-br from-[#1a1608] to-charcoal text-center space-y-4 max-w-xl mx-auto">
-              <div className="size-14 rounded-full bg-gold/15 border border-gold/50 text-gold text-2xl flex items-center justify-center mx-auto shadow-md">
-                🔒
-              </div>
-              <h3 className="font-serif text-2xl text-ink font-medium">
-                Video Conferencing Locked to $50 CAD Tier
-              </h3>
-              <p className="text-xs text-muted leading-relaxed">
-                Your current account is Free. Upgrade for $50 CAD to unlock all three 30-minute private video conference calls with Jeremy Ashe.
-              </p>
-              <button
-                type="button"
-                onClick={handleCartUpgrade}
-                className="btn-gold py-3 px-8 text-xs font-semibold cursor-pointer shadow-md inline-flex items-center gap-2"
-              >
-                <span>⭐</span> Unlock 3 Calls for $50 CAD →
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="p-4 rounded-xl border border-emerald/40 bg-emerald/10 text-emerald text-xs flex items-center justify-between">
+          <div className="space-y-6">
+            <div className="p-4 rounded-xl border border-emerald/40 bg-emerald/10 text-emerald text-xs flex items-center justify-between">
                 <span>
                   ✓ <strong>Sovereign Membership Active:</strong> {user.meetingCreditsRemaining} of 3 video conference calls remaining.
                 </span>
@@ -909,7 +892,6 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
                 })}
               </div>
             </div>
-          )}
         </section>
       )}
 
@@ -1011,7 +993,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
 
               {/* Lecture Screen */}
               <div className="rounded-2xl border border-line bg-obsidian p-8 text-center space-y-4 relative overflow-hidden shadow-inner">
-                {!isPaid && !modules[activeModuleIndex].isFree ? (
+                {false ? (
                   <div className="space-y-3 py-4">
                     <span className="text-2xl">🔒</span>
                     <h4 className="font-serif text-xl text-ink">Module Locked</h4>
@@ -1106,7 +1088,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
                 {modules.map((mod, idx) => {
                   const isCurrent = idx === activeModuleIndex;
                   const isDone = user.completedModules.includes(mod.id);
-                  const locked = !isPaid && !mod.isFree;
+                  const locked = false;
 
                   return (
                     <button

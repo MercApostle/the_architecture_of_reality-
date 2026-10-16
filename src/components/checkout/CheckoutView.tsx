@@ -20,7 +20,7 @@ export default function CheckoutView() {
     addItem,
     clearCart,
   } = useCart();
-  const { user, upgradeToPaidMembership } = useMember();
+  const { user, activatePaidMembership } = useMember();
 
   // Form State
   const [name, setName] = useState("");
@@ -87,8 +87,8 @@ export default function CheckoutView() {
             cardLast4: "••••",
           };
 
-          if (items.some((i) => i.id === "members-access")) {
-            upgradeToPaidMembership();
+          if (items.some((i) => i.id === "members-access") || !sessionId) {
+            activatePaidMembership(data.customerEmail || email, data.customerName || name);
           }
 
           recordCompletedOrder(newOrder);
@@ -242,7 +242,7 @@ export default function CheckoutView() {
     };
 
     if (items.some((i) => i.id === "members-access")) {
-      upgradeToPaidMembership();
+      activatePaidMembership(email, name);
     }
 
     recordCompletedOrder(newOrder);
