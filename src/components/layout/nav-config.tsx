@@ -1,6 +1,7 @@
 /** Shared (server-safe) navigation config + brand mark. */
 
 export const NAV_LINKS = [
+  { href: "/why", label: "The Why" },
   { href: "/library", label: "Library" },
   { href: "/academy", label: "Academy" },
   { href: "/offers", label: "Offers" },

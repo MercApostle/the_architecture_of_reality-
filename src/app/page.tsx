@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BOOKS, UNIVERSAL_PRINCIPLES } from "@/lib/data/books";
 import { BookCover, CtaBanner, SectionHeader } from "@/components/ui/primitives";
 import { VesselGlyph } from "@/components/ui/VesselGlyph";
+import WhySection from "@/components/home/WhySection";
 
 const THESIS = [
   {
@@ -108,6 +109,9 @@ export default function Home() {
           </ol>
         </div>
       </section>
+
+      {/* ── THE ARCHITECT'S THESIS: WHY WE ARE BUILDING THIS IN BELLA COOLA ── */}
+      <WhySection />
 
       {/* ── TRILOGY ──────────────────────────────────────────── */}
       <section className="border-y border-line bg-charcoal/40 py-24" id="trilogy">
