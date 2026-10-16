@@ -47,6 +47,7 @@ interface MemberContextType {
   logout: () => void;
   awardPoints: (taskId: string, points: number, taskName: string) => boolean;
   upgradeToPaidMembership: () => void;
+  downgradeToFree: () => void;
   bookMeetingCredit: (callNumber: number, topic?: string, scheduledDate?: string) => boolean;
   toggleModuleComplete: (moduleId: string, moduleTitle?: string) => void;
   toggleBookmark: (resourceId: string) => void;
@@ -202,6 +203,25 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
 
     persistUser(updatedUser);
     triggerToast(bonusPoints, "Upgraded to Sovereign Membership ($50 Tier) — 3 Video Calls Unlocked!");
+  }, [user, persistUser, triggerToast]);
+
+  // Downgrade or Reset to Free Tier (for testing and tier resets)
+  const downgradeToFree = useCallback(() => {
+    if (!user) return;
+    const updatedUser: MemberUser = {
+      ...user,
+      tier: "free",
+      tierLabel: "Free Member Account",
+      meetingCreditsTotal: 0,
+      meetingCreditsRemaining: 0,
+      bookedMeetings: [],
+    };
+    try {
+      localStorage.removeItem("aor_paid_member_active");
+      localStorage.removeItem("aor_membership_tier");
+    } catch {}
+    persistUser(updatedUser);
+    triggerToast(0, "Account reset to Free Member Tier");
   }, [user, persistUser, triggerToast]);
 
   // Book a video call credit
@@ -443,6 +463,7 @@ export function MemberProvider({ children }: { children: React.ReactNode }) {
         logout,
         awardPoints,
         upgradeToPaidMembership,
+        downgradeToFree,
         bookMeetingCredit,
         toggleModuleComplete,
         toggleBookmark,

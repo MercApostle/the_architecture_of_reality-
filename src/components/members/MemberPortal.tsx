@@ -20,6 +20,7 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
     logout,
     toggleModuleComplete,
     upgradeToPaidMembership,
+    downgradeToFree,
     bookMeetingCredit,
     getUserRank,
   } = useMember();
@@ -87,7 +88,6 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
         "+200 Gamification Points & Sovereign Member Badge",
       ],
     });
-    upgradeToPaidMembership();
     openCart();
   };
 
@@ -359,31 +359,16 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
             </p>
           </div>
 
-          {/* 1-Click Instant Demo Options */}
+          {/* Sample Free Preview Option */}
           <div className="space-y-2">
-            <div className="p-3.5 rounded-xl border border-gold/40 bg-gold/10 text-center space-y-2">
-              <span className="font-mono text-[0.62rem] text-gold uppercase tracking-widest font-bold block">
-                ⚡ Instant 1-Click Test Access
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  id="member-demo-free-btn"
-                  onClick={() => loginWithDemo(false)}
-                  className="btn-ghost py-2 text-[0.7rem] font-semibold cursor-pointer border-gold/40 text-gold hover:bg-gold/20"
-                >
-                  Free Account Demo (75 pts)
-                </button>
-                <button
-                  type="button"
-                  id="member-demo-paid-btn"
-                  onClick={() => loginWithDemo(true)}
-                  className="btn-gold py-2 text-[0.7rem] font-semibold cursor-pointer shadow-md"
-                >
-                  $50 CAD Paid Tier (3 Calls)
-                </button>
-              </div>
-            </div>
+            <button
+              type="button"
+              id="member-demo-free-btn"
+              onClick={() => loginWithDemo(false)}
+              className="w-full btn-ghost py-2.5 text-[0.72rem] font-semibold cursor-pointer border-line text-muted hover:text-gold hover:border-gold/40 flex items-center justify-center gap-2"
+            >
+              <span>⚡</span> Explore Sample Free Account (Preview)
+            </button>
           </div>
 
           <div className="relative flex items-center justify-center">
@@ -554,13 +539,24 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
               <span>⭐</span> Upgrade to Paid Access ($50 CAD)
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={() => setActiveTab("meetings")}
-              className="btn-gold text-xs px-4 py-2 flex items-center gap-2 shadow-sm cursor-pointer"
-            >
-              <span>📅</span> {user.meetingCreditsRemaining} Video Calls Remaining
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab("meetings")}
+                className="btn-gold text-xs px-4 py-2 flex items-center gap-2 shadow-sm cursor-pointer"
+              >
+                <span>📅</span> {user.meetingCreditsRemaining} Video Calls Remaining
+              </button>
+              <button
+                type="button"
+                id="reset-tier-btn"
+                onClick={downgradeToFree}
+                title="Reset tier to free to test the real purchase flow"
+                className="text-[0.68rem] font-mono text-muted hover:text-gold border border-line bg-obsidian/80 px-2.5 py-1.5 rounded transition cursor-pointer"
+              >
+                ↺ Reset to Free (Test)
+              </button>
+            </div>
           )}
 
           <button

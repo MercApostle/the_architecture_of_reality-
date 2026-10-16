@@ -3,15 +3,18 @@
 import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useMember } from "@/context/MemberContext";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const isDemoMode = searchParams.get("demo_mode") === "true" || searchParams.get("demo") === "true";
   const [copied, setCopied] = useState(false);
+  const { upgradeToPaidMembership } = useMember();
 
   useEffect(() => {
-    // Elevate local membership session status so the user can immediately access paid member features
+    // Elevate member account upon confirmed checkout
+    upgradeToPaidMembership();
     try {
       localStorage.setItem("aor_membership_tier", "paid");
       localStorage.setItem("aor_paid_member_active", "true");
@@ -19,7 +22,7 @@ function SuccessContent() {
     } catch {
       // Storage access may be restricted in private browsing
     }
-  }, []);
+  }, [upgradeToPaidMembership]);
 
   const copySessionId = () => {
     if (!sessionId) return;
