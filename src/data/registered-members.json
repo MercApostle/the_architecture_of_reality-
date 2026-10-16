@@ -7,5 +7,13 @@
     "tierLabel": "Sovereign Member ($50 Tier)",
     "memberSince": "March 2026",
     "points": 275
+  },
+  {
+    "id": "MercApostle99",
+    "name": "MercApostle99",
+    "email": "jeremyashe@gmail.com",
+    "tier": "paid",
+    "memberSince": "October 2026",
+    "points": 500
   }
 ]
