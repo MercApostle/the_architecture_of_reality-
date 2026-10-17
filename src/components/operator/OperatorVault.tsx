@@ -343,7 +343,17 @@ export default function OperatorVault({
             rel="noopener noreferrer"
           >
             <span>📥</span>
-            <span>Download Operator Manual (PDF)</span>
+            <span>Operator Manual (PDF)</span>
+          </a>
+          <a
+            href="/pdfs/The_Architecture_of_Reality_AI_Operating_System_Manual.pdf"
+            download="The_Architecture_of_Reality_AI_Operating_System_Manual.pdf"
+            className="btn-gold text-xs py-2 px-3.5 flex items-center gap-1.5 shadow-gold/20"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>⚡</span>
+            <span>AI Systems Manual (PDF)</span>
           </a>
           <Link
             href="/members"
