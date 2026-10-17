@@ -26,7 +26,7 @@ export default function Footer() {
             {NAV_LINKS.map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className="text-muted transition hover:text-gold">
-                  {l.label}
+                  {l.displayName || l.label}
                 </Link>
               </li>
             ))}
