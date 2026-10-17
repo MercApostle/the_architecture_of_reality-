@@ -335,6 +335,16 @@ export default function OperatorVault({
         </div>
 
         <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <a
+            href="/pdfs/The_Architecture_of_Reality_Operator_Manual.pdf"
+            download="The_Architecture_of_Reality_Operator_Manual.pdf"
+            className="btn-gold text-xs py-2 px-3.5 flex items-center gap-1.5 shadow-gold/20"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>📥</span>
+            <span>Download Operator Manual (PDF)</span>
+          </a>
           <Link
             href="/members"
             className="btn-ghost text-xs py-2 px-3.5 border border-line text-muted hover:text-gold"
