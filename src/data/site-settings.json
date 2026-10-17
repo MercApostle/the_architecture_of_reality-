@@ -1,4 +1,8 @@
 {
+  "topBarPromoActive": false,
+  "topBarPromoBadge": "PROMO",
+  "topBarPromoText": "Foundation Volume & Trilogy Available in Library",
+  "topBarPromoLink": "/library",
   "announcementActive": true,
   "announcementBadge": "FOUNDER ADVISORY OPEN",
   "announcementText": "Jeremy Ashe is currently accepting three enterprise founders for Q4 80-Hour Work Month system installation.",

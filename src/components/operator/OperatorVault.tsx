@@ -930,13 +930,67 @@ export default function OperatorVault({
               />
             </div>
 
+            {/* ── TOP UTILITY SHELF SPONSOR / PROMO CONTROLS ── */}
+            <div className="pt-4 border-t border-line space-y-4">
+              <div className="flex items-center justify-between p-3 rounded-xl border border-line bg-obsidian">
+                <div>
+                  <p className="font-serif text-sm text-ink font-medium">Top Bar Sponsor / Deal / Product Promotion</p>
+                  <p className="text-xs text-muted">Override top utility shelf ticker with custom sponsor or deal</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={Boolean(siteSettings.topBarPromoActive)}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, topBarPromoActive: e.target.checked })}
+                  className="size-5 rounded accent-gold cursor-pointer"
+                />
+              </div>
+
+              {siteSettings.topBarPromoActive && (
+                <div className="space-y-3 p-4 rounded-xl border border-gold/30 bg-obsidian/60 animate-fade-up">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-mono text-[0.68rem] text-gold uppercase block font-semibold">Promo Badge</label>
+                      <input
+                        type="text"
+                        value={siteSettings.topBarPromoBadge || ''}
+                        onChange={(e) => setSiteSettings({ ...siteSettings, topBarPromoBadge: e.target.value })}
+                        placeholder="e.g. SPONSOR, DEAL, EXCLUSIVE"
+                        className="w-full rounded-lg border border-line bg-charcoal px-3 py-2 text-xs text-ink focus:border-gold focus:outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="font-mono text-[0.68rem] text-gold uppercase block font-semibold">Promo Target Link</label>
+                      <input
+                        type="text"
+                        value={siteSettings.topBarPromoLink || ''}
+                        onChange={(e) => setSiteSettings({ ...siteSettings, topBarPromoLink: e.target.value })}
+                        placeholder="/offers, /library, or https://..."
+                        className="w-full rounded-lg border border-line bg-charcoal px-3 py-2 text-xs text-ink focus:border-gold focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-mono text-[0.68rem] text-gold uppercase block font-semibold">Promotion Headline / Copy</label>
+                    <input
+                      type="text"
+                      value={siteSettings.topBarPromoText || ''}
+                      onChange={(e) => setSiteSettings({ ...siteSettings, topBarPromoText: e.target.value })}
+                      placeholder="e.g. 50% Off Sovereign Bundle · Limited Q4 Availability"
+                      className="w-full rounded-lg border border-line bg-charcoal px-3 py-2 text-xs text-ink focus:border-gold focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={savingSettings}
                 className="btn-gold py-2.5 px-6 text-xs font-semibold cursor-pointer shadow-md disabled:opacity-50"
               >
-                {savingSettings ? 'Broadcasting…' : 'Update Global Announcement →'}
+                {savingSettings ? 'Broadcasting…' : 'Save Broadcast & Promotions →'}
               </button>
             </div>
           </form>

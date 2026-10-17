@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { BrandMark, NAV_LINKS } from "./nav-config";
 import { useCart } from "@/context/CartContext";
 import { useMember } from "@/context/MemberContext";
+import siteSettingsData from "@/data/site-settings.json";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -46,10 +47,39 @@ export default function Navbar() {
               <span className="size-1.5 rounded-full bg-emerald animate-pulse-gold" />
               <span>Universal Law &middot; Sovereign Systems</span>
             </span>
-            <span className="text-white/10">|</span>
-            <span className="text-stone-400 hidden lg:inline">
-              Foundation Volume &amp; Trilogy Available in Reading Room
-            </span>
+            <span className="text-white/10 hidden lg:inline">|</span>
+            {/* Dynamic Promotional / Sponsor / Library Slot */}
+            {siteSettingsData.topBarPromoActive ? (
+              <Link
+                href={siteSettingsData.topBarPromoLink || "/library"}
+                id="top-shelf-promo-link"
+                className="text-stone-300 hover:text-gold transition-colors hidden lg:inline-flex items-center gap-1.5 group font-mono text-[0.72rem]"
+              >
+                <span className="text-gold font-bold uppercase tracking-wider text-[0.62rem] bg-gold/15 px-1.5 py-0.5 rounded border border-gold/30">
+                  {siteSettingsData.topBarPromoBadge || "PROMO"}
+                </span>
+                <span className="group-hover:text-gold transition max-w-[260px] xl:max-w-[380px] truncate">
+                  {siteSettingsData.topBarPromoText}
+                </span>
+                <span className="text-gold/70 group-hover:text-gold group-hover:translate-x-0.5 transition-transform text-[0.68rem]">
+                  &rarr;
+                </span>
+              </Link>
+            ) : (
+              <Link
+                href="/library"
+                id="top-shelf-promo-link"
+                className="text-stone-400 hover:text-gold transition-colors hidden lg:inline-flex items-center gap-1.5 group font-mono text-[0.72rem]"
+                title="Enter The Architecture of Reality Library"
+              >
+                <span className="text-stone-300 group-hover:text-gold transition">
+                  Foundation Volume &amp; Trilogy Available in Library
+                </span>
+                <span className="text-gold/70 group-hover:text-gold group-hover:translate-x-0.5 transition-transform text-[0.68rem]">
+                  &rarr;
+                </span>
+              </Link>
+            )}
           </div>
 
           {/* Right: Elevated Utility Cluster (Audit · Membership · Cart) */}

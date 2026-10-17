@@ -28,6 +28,10 @@ export interface SiteSettings {
   announcementBadge: string;
   announcementText: string;
   announcementLink: string;
+  topBarPromoActive?: boolean;
+  topBarPromoBadge?: string;
+  topBarPromoText?: string;
+  topBarPromoLink?: string;
   founderCohortOpen: boolean;
   lastUpdated: string;
 }
