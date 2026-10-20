@@ -245,6 +245,22 @@ export default function ContactView() {
                 />
               </div>
 
+              <div className="space-y-3 pt-1">
+                {/* BC PIPA Statutory Notice */}
+                <div className="p-3.5 rounded-xl border border-line bg-obsidian/70 space-y-1 text-left">
+                  <div className="flex items-center gap-1.5 text-gold font-mono text-[0.62rem] uppercase tracking-wider font-semibold">
+                    <span>🛡️</span>
+                    <span>BC PIPA Privacy Notice</span>
+                  </div>
+                  <p className="text-[0.65rem] text-muted leading-relaxed">
+                    Personal information (name, email, message) is collected pursuant to British Columbia&apos;s <em>Personal Information Protection Act</em> solely to respond to your specific inquiry. Data is encrypted in transit and never syndicated, sold, or shared with third parties. Read our{' '}
+                    <Link href="/privacy" className="text-gold underline hover:text-gold-bright">
+                      Privacy Policy
+                    </Link>.
+                  </p>
+                </div>
+              </div>
+
               <button
                 type="submit"
                 id="contact-submit-btn"
@@ -254,8 +270,8 @@ export default function ContactView() {
                 {status === "submitting" ? "Transmitting Message…" : "Transmit Message to Jeremy Ashe →"}
               </button>
 
-              <p className="text-[0.65rem] text-faint text-center">
-                Your data is held with strict confidentiality. No spam, tracking pixels, or third-party syndication.
+              <p className="text-[0.62rem] text-faint text-center">
+                Secure 256-bit TLS transmission &middot; British Columbia Regulatory Compliance
               </p>
             </form>
           )}

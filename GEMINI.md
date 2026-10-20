@@ -39,3 +39,16 @@ All new pages, modals, workbooks, and portals must match the existing site aesth
   3. Execute query and handle errors cleanly.
   4. Call `revalidatePath()`.
 - **Database Queries:** Place reusable read queries in `lib/queries/[domain].queries.ts`.
+
+## 5. Canadian & BC Regulatory Compliance + Anti-Scraping Architecture (Strict Invariant)
+All code, database schemas, API routes, and frontend components must strictly adhere to the following invariants:
+- **BC PIPA Purpose Specification:** Every interactive form collecting personal information (`/audit`, `/contact`, `/meet`, `/checkout`, `/signup`, `/members`) must display a plain-language statutory notice stating *why* the data is collected before submission.
+- **Data Minimization & Granular Consent:** Only collect data strictly necessary for operational fulfillment. Marketing opt-ins and newsletters must be unbundled and require explicit user consent.
+- **Security Safeguards & RBAC:** Enforce Role-Based Access Control via Supabase RLS and Next.js Edge Middleware (`src/middleware.ts`). Protected routes (`/operator`, `/admin`, `/portal`) must require valid, signed session tokens or HTTP-only clearance cookies.
+- **Zero Hardcoded Secrets:** Never hardcode passwords, passkeys, API keys, or database URLs in client or server files. Use `process.env.*`.
+- **Anti-Scraping & Bot Mitigation:**
+  - Maintain `robots.txt` / `src/app/robots.ts` explicitly blocking known commercial LLM scrapers (`GPTBot`, `CCBot`, `ClaudeBot`, `Bytespider`, etc.) and disallowing protected paths.
+  - Enforce Edge sliding-window rate limiting on all API routes and mutations (`src/lib/security/rate-limit.ts`), returning HTTP `429 Too Many Requests`.
+- **Server-Side Content Protection (SSR/RSC Gating):** Never render proprietary manuscripts, paid workshop text, audio streams, or video URLs into unauthenticated client-side RSC payloads. Gate proprietary content behind server-side entitlement checks (`LessonPage`), serving an editorial teaser and access gate when unentitled.
+- **Data Subject Rights & Lifecycle:** Maintain server actions (`src/lib/actions/compliance.actions.ts`) supporting BC PIPA Rights of Access, Correction, and Erasure/Destruction.
+- **Structured Audit Logging:** Maintain structured JSON security logs (`src/lib/audit/logger.ts`) for auth attempts, rate limits, operator clearance, and compliance requests.

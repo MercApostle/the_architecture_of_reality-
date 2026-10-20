@@ -238,6 +238,20 @@ export default function ConsultancyVettingApp() {
                   />
                 </div>
 
+                {/* BC PIPA Statutory Notice */}
+                <div className="p-3.5 rounded-xl border border-line bg-obsidian/70 space-y-1 text-left">
+                  <div className="flex items-center gap-1.5 text-gold font-mono text-[0.62rem] uppercase tracking-wider font-semibold">
+                    <span>🛡️</span>
+                    <span>BC PIPA Executive Confidentiality Notice</span>
+                  </div>
+                  <p className="text-[0.65rem] text-muted leading-relaxed">
+                    Personal and business operational details are collected pursuant to British Columbia&apos;s <em>Personal Information Protection Act</em> strictly to assess mission alignment and facilitate private executive advisory scheduling. Information is protected by executive non-disclosure covenants and is never shared, marketed, or syndicated. Read our{' '}
+                    <Link href="/privacy" className="text-gold underline hover:text-gold-bright">
+                      Privacy Policy
+                    </Link>.
+                  </p>
+                </div>
+
                 <div className="space-y-2 pt-2">
                   <label className="font-mono text-xs text-muted uppercase tracking-wider block">
                     Business Sector *

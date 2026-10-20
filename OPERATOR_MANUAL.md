@@ -261,10 +261,11 @@ To deploy directly via the command line:
 | :--- | :--- | :--- |
 | **Live Production Website** | `https://thearchitectureofreality.vercel.app` | Public Access |
 | **Local Development** | `http://localhost:3000` | Local Terminal (`npm run dev`) |
-| **Operator Command Vault** | `/operator` | Passkey: `reality2026` (or 1-Click Unlock) |
-| **Library Reading Room** | `/library` | 100% Free Public Access |
-| **12-Question Energy Audit** | `/audit` | Public Access (Email Telemetry via Resend) |
-| **Sovereign Academy LMS** | `/academy` | Member Access ($50/mo or Dev Bypass) |
+| **Operator Command Vault** | `/operator` & `/admin` | Gated by `OPERATOR_MASTER_KEY` (HTTP-only cookie `ar_operator_clearance_v2`) or Supabase admin session |
+| **Library Reading Room** | `/library` | 100% Free Public Access (Direct in-browser reader + PDF download) |
+| **12-Question Energy Audit** | `/audit` | Public Access with BC PIPA statutory notice & Resend email telemetry |
+| **Sovereign Academy LMS** | `/academy` | Member Access ($50/mo or Dev Bypass); RSC-shielded curriculum |
+| **Privacy & Data Console** | `/privacy` | BC PIPA statutory rights console (data export, correction, deletion) |
 | **Founder Strategy Scheduler** | `/meet` | Cal.com Google Meet Integration |
 | **Email Service Provider** | Resend API (`RESEND_API_KEY`) | Telemetry to `jeremyashe@gmail.com` |
 | **Database & Auth** | Supabase PostgreSQL | `NEXT_PUBLIC_SUPABASE_URL` |
@@ -272,6 +273,29 @@ To deploy directly via the command line:
 
 ---
 
-*The Architecture of Reality · Sovereign Operator Manual v2.0*  
+## 8. Canadian & BC Regulatory Compliance (BC PIPA) & Anti-Scraping Defenses
+
+To ensure full statutory compliance under British Columbia's *Personal Information Protection Act* (BC PIPA) and protect intellectual property against unauthorized automated extraction:
+
+### 8.1 Statutory Purpose Specification & Unbundled Consent
+- **Pre-Collection Notices:** Every data collection surface (`/audit`, `/contact`, `/meet`, `/checkout`, `/signup`, `/members`) renders an explicit, plain-language statutory notice explaining why information is collected before submission.
+- **Unbundled Marketing:** Promotional communications require an explicit, unbundled opt-in checkbox that is unchecked by default. Diagnostic and transactional access is never conditioned upon marketing consent.
+
+### 8.2 Data Subject Rights Console (`/privacy`)
+- Visitors and members can self-serve their statutory rights under BC PIPA Sections 23–35:
+  1. **Right of Access (Sec. 23):** Immediate JSON export of all associated audit records, enrollments, workbooks, and contact history via `exportUserDataAction`.
+  2. **Right of Correction (Sec. 24):** Direct submission of profile and record corrections via `correctUserDataAction`.
+  3. **Right of Erasure / Withdrawal (Sec. 35):** Submission of verified deletion requests to the designated Privacy Officer via `requestDataDeletionAction`.
+- **Designated Privacy Officer:** Jeremy Ashe (`privacy@thearchitectureofreality.com` / `jeremyashe@gmail.com`), Bella Coola, British Columbia, Canada.
+
+### 8.3 Anti-Scraping Defenses & Content Protection
+- **Bot Crawlers Disallowed:** `robots.txt` and `src/app/robots.ts` disallow commercial AI scrapers (`GPTBot`, `CCBot`, `ClaudeBot`, `anthropic-ai`, `Bytespider`, etc.) and block access to sensitive administrative, transactional, and API directories.
+- **Edge Sliding-Window Rate Limiting:** Next.js Edge Middleware enforces sliding-window rate limiting on `/api/*` routes (e.g., 5 inquiries/min on `/api/contact`, 15/min on `/api/checkout`), returning `HTTP 429 Too Many Requests` with retry headers.
+- **Server-Side RSC Curriculum Shielding:** Paid Academy lesson content (`video_embed_url`, `audio_url`, downloadable blueprints, full markdown) is evaluated server-side in `EntitledLessonArea`. Unentitled requests receive a truncated preview and the Obsidian `SovereignAccessGate`; media URLs are never sent over the wire to unauthenticated clients or bots.
+- **Zero Client Passkeys:** Client-side passkeys and quick-bypass credentials in the frontend bundle are eliminated. Operator authentication requires valid server-side verification against `process.env.OPERATOR_MASTER_KEY` and sets an `ar_operator_clearance_v2` HTTP-only secure cookie.
+
+---
+
+*The Architecture of Reality · Sovereign Operator Manual v2.1*  
 *Curated for Jeremy Ashe · Master Systems Architect*  
-*All Systems Operational.*
+*All Systems Operational & BC PIPA Compliant.*

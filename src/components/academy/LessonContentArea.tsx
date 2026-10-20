@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import LessonAudioPlayer from './LessonAudioPlayer';
 import InteractiveWorkbook from './InteractiveWorkbook';
+import SovereignAccessGate from './SovereignAccessGate';
 import type { LessonWithDetails, CourseWithCurriculum } from '@/lib/queries/academy.queries';
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
   lesson: LessonWithDetails;
   prevLesson?: { courseSlug: string; lessonSlug: string; title: string } | null;
   nextLesson?: { courseSlug: string; lessonSlug: string; title: string } | null;
+  isEntitled?: boolean;
 }
 
 export default function LessonContentArea({
@@ -19,6 +21,7 @@ export default function LessonContentArea({
   lesson,
   prevLesson,
   nextLesson,
+  isEntitled = true,
 }: Props) {
   return (
     <article className="space-y-10">
@@ -163,14 +166,18 @@ export default function LessonContentArea({
         </section>
       )}
 
-      {/* Interactive In-Browser Workbook */}
-      <InteractiveWorkbook
-        lessonId={lesson.id}
-        lessonTitle={lesson.title}
-        courseSlug={course.slug}
-        schema={lesson.workbook_schema}
-        nextLesson={nextLesson}
-      />
+      {/* Interactive Workbook or Sovereign Access Gate */}
+      {isEntitled ? (
+        <InteractiveWorkbook
+          lessonId={lesson.id}
+          lessonTitle={lesson.title}
+          courseSlug={course.slug}
+          schema={lesson.workbook_schema}
+          nextLesson={nextLesson}
+        />
+      ) : (
+        <SovereignAccessGate course={course} lessonTitle={lesson.title} />
+      )}
 
       {/* Lesson Pagination Footer */}
       <footer className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">

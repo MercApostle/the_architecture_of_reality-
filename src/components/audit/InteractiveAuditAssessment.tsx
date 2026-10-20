@@ -766,6 +766,20 @@ export default function InteractiveAuditAssessment() {
               </p>
             </div>
 
+            {/* BC PIPA Purpose Notice */}
+            <div className="p-3.5 rounded-xl border border-line bg-obsidian/70 space-y-1 text-left">
+              <div className="flex items-center gap-1.5 text-gold font-mono text-[0.62rem] uppercase tracking-wider font-semibold">
+                <span>🛡️</span>
+                <span>BC PIPA Purpose Specification</span>
+              </div>
+              <p className="text-[0.65rem] text-muted leading-relaxed">
+                Your email and diagnostic responses are collected strictly pursuant to British Columbia&apos;s <em>Personal Information Protection Act</em> to generate your 72-Hour Calibration Directive and archive your alignment indices. Data is encrypted, held in confidence, and never sold or syndicated. Read our{' '}
+                <Link href="/privacy" className="text-gold underline hover:text-gold-bright">
+                  Privacy Policy
+                </Link>.
+              </p>
+            </div>
+
             {emailStatus === "sent" ? (
               <div className="p-4 rounded-xl border border-emerald/40 bg-emerald/10 text-emerald text-sm space-y-1">
                 <p className="font-semibold">✓ Report Transmitted &amp; Archived</p>

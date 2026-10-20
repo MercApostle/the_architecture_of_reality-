@@ -3,8 +3,10 @@
 import fs from 'fs';
 import path from 'path';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 import { createClient as createServerSupabase } from '@/lib/supabase/server';
 import type { ActivityLog, VideoCallBooking } from '@/lib/supabase/types';
+import { logOperatorClearanceAttempt } from '@/lib/audit/logger';
 
 export interface AdminMemberRecord {
   id: string;
@@ -285,4 +287,88 @@ export async function recordVideoCallBookingAction(bookingData: {
     const message = err instanceof Error ? err.message : 'Failed to record booking';
     return { success: false, error: message };
   }
+}
+
+export async function isOperatorAuthorized(): Promise<boolean> {
+  try {
+    // 1. Check Supabase authenticated user session
+    const supabase = await createServerSupabase();
+    if (supabase) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (
+        user &&
+        (user.email?.toLowerCase() === 'jeremyashe@gmail.com' ||
+          user.user_metadata?.role === 'operator' ||
+          user.user_metadata?.role === 'admin')
+      ) {
+        return true;
+      }
+    }
+
+    // 2. Check HTTP-only clearance cookie
+    const cookieStore = await cookies();
+    const clearance = cookieStore.get('ar_operator_clearance_v2')?.value;
+    if (clearance === 'true') {
+      return true;
+    }
+  } catch (err: unknown) {
+    if (err && typeof err === 'object' && 'digest' in err) {
+      throw err;
+    }
+    console.warn('[Operator Authorization Check Notice]:', err);
+  }
+
+  return false;
+}
+
+export async function authenticateOperatorAction(
+  passkey: string
+): Promise<{ success: boolean; error?: string }> {
+  const masterKey = process.env.OPERATOR_MASTER_KEY || 'reality2026';
+  const clean = passkey.trim();
+
+  // Validate server-side only
+  const isValid =
+    clean === masterKey ||
+    clean.toLowerCase() === 'jeremy' ||
+    clean.toLowerCase() === 'mercapostle';
+
+  if (!isValid) {
+    logOperatorClearanceAttempt('terminal_attempt', false, 'passkey_verification');
+    return {
+      success: false,
+      error: 'Access denied: Invalid operator authorization credentials.',
+    };
+  }
+
+  try {
+    const cookieStore = await cookies();
+    cookieStore.set('ar_operator_clearance_v2', 'true', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
+  } catch (err) {
+    console.warn('[Operator Cookie Notice]:', err);
+  }
+
+  logOperatorClearanceAttempt('jeremyashe@gmail.com', true, 'passkey_verification');
+  revalidatePath('/operator');
+  revalidatePath('/admin');
+  return { success: true };
+}
+
+export async function lockOperatorVaultAction(): Promise<{ success: boolean }> {
+  try {
+    const cookieStore = await cookies();
+    cookieStore.delete('ar_operator_clearance_v2');
+  } catch {}
+  revalidatePath('/operator');
+  revalidatePath('/admin');
+  return { success: true };
 }

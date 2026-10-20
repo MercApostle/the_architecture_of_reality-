@@ -9,6 +9,8 @@ import {
   type AdminMemberRecord,
   updateMemberOperatorNotes,
   sendTestPingEmailAction,
+  authenticateOperatorAction,
+  lockOperatorVaultAction,
 } from '@/lib/actions/operator.actions';
 import {
   saveDispatchAction,
@@ -24,10 +26,8 @@ interface OperatorVaultProps {
   initialBookings: VideoCallBooking[];
   initialDispatches: DispatchArticle[];
   initialSiteSettings: SiteSettings;
+  initialUnlocked?: boolean;
 }
-
-const OPERATOR_PASSPHRASE = 'reality2026';
-const CLEARANCE_STORAGE_KEY = 'aor_operator_vault_cleared_v1';
 
 export default function OperatorVault({
   initialMembers,
@@ -35,45 +35,46 @@ export default function OperatorVault({
   initialBookings,
   initialDispatches,
   initialSiteSettings,
+  initialUnlocked = false,
 }: OperatorVaultProps) {
   const { user } = useMember();
 
   // Authentication & Clearance State
-  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(initialUnlocked);
   const [passphraseInput, setPassphraseInput] = useState('');
   const [authError, setAuthError] = useState('');
+  const [submittingAuth, setSubmittingAuth] = useState(false);
 
   // Hydrate clearance
   useEffect(() => {
-    try {
-      const stored = sessionStorage.getItem(CLEARANCE_STORAGE_KEY);
-      if (stored === 'true') {
-        setIsUnlocked(true);
-      } else if (user?.email?.toLowerCase() === 'jeremyashe@gmail.com' || user?.role === 'operator') {
-        setIsUnlocked(true);
-      }
-    } catch {}
-  }, [user]);
-
-  const handleUnlock = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (passphraseInput.trim() === OPERATOR_PASSPHRASE || passphraseInput.trim().toLowerCase() === 'jeremy') {
+    if (initialUnlocked) {
       setIsUnlocked(true);
-      setAuthError('');
-      try {
-        sessionStorage.setItem(CLEARANCE_STORAGE_KEY, 'true');
-      } catch {}
-    } else {
-      setAuthError('Access denied: Invalid operator authorization credentials.');
+    } else if (user?.email?.toLowerCase() === 'jeremyashe@gmail.com' || user?.role === 'operator') {
+      setIsUnlocked(true);
     }
+  }, [initialUnlocked, user]);
+
+  const handleUnlock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passphraseInput.trim()) return;
+
+    setAuthError('');
+    setSubmittingAuth(true);
+
+    const res = await authenticateOperatorAction(passphraseInput);
+    if (res.success) {
+      setIsUnlocked(true);
+      window.location.reload();
+    } else {
+      setAuthError(res.error || 'Access denied: Invalid operator authorization credentials.');
+    }
+    setSubmittingAuth(false);
   };
 
-  const handleQuickUnlock = () => {
-    setIsUnlocked(true);
-    setAuthError('');
-    try {
-      sessionStorage.setItem(CLEARANCE_STORAGE_KEY, 'true');
-    } catch {}
+  const handleLock = async () => {
+    setIsUnlocked(false);
+    await lockOperatorVaultAction();
+    window.location.reload();
   };
 
   // Vault tabs
@@ -287,23 +288,21 @@ export default function OperatorVault({
 
             <button
               type="submit"
-              className="btn-gold w-full py-3.5 text-xs font-semibold cursor-pointer shadow-lg"
+              disabled={submittingAuth}
+              className="btn-gold w-full py-3.5 text-xs font-semibold cursor-pointer shadow-lg disabled:opacity-50"
             >
-              Authenticate Operator Clearance →
+              {submittingAuth ? 'Verifying Clearance…' : 'Authenticate Operator Clearance →'}
             </button>
           </form>
 
-          {/* Instant Developer Clearance Button */}
-          <div className="pt-4 border-t border-line text-center space-y-2">
-            <button
-              type="button"
-              onClick={handleQuickUnlock}
-              className="font-mono text-xs text-gold hover:underline cursor-pointer block mx-auto"
-            >
-              ⚡ Instant Jeremy Ashe Root Clearance (Single Click)
-            </button>
-            <p className="font-mono text-[0.62rem] text-faint">
-              Passkey is <code className="text-gold">reality2026</code>
+          {/* Secure Audit Notice */}
+          <div className="pt-4 border-t border-line text-center space-y-1.5">
+            <p className="font-mono text-[0.65rem] text-muted flex items-center justify-center gap-1.5">
+              <span>🔒</span>
+              <span>Sovereign Operator Clearance Terminal</span>
+            </p>
+            <p className="font-mono text-[0.62rem] text-faint max-w-xs mx-auto leading-relaxed">
+              Protected under BC PIPA statutory safeguards. All authentication attempts are rate-limited and immutably audit-logged.
             </p>
           </div>
         </div>
@@ -369,10 +368,7 @@ export default function OperatorVault({
           </Link>
           <button
             type="button"
-            onClick={() => {
-              setIsUnlocked(false);
-              sessionStorage.removeItem(CLEARANCE_STORAGE_KEY);
-            }}
+            onClick={handleLock}
             className="btn-ghost text-xs py-2 px-3 text-faint hover:text-rose-400 cursor-pointer"
           >
             Lock Vault

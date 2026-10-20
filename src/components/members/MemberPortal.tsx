@@ -613,6 +613,20 @@ export default function MemberPortal({ initialMode = "signin" }: Props) {
               />
             </div>
 
+            {/* BC PIPA Statutory Notice */}
+            <div className="p-3 rounded-xl border border-line bg-obsidian/70 space-y-1 text-left">
+              <div className="flex items-center gap-1.5 text-gold font-mono text-[0.6rem] uppercase tracking-wider font-semibold">
+                <span>🛡️</span>
+                <span>BC PIPA Privacy Notice</span>
+              </div>
+              <p className="text-[0.62rem] text-muted leading-relaxed">
+                Your Member ID and email are collected pursuant to British Columbia&apos;s <em>Personal Information Protection Act</em> solely to authenticate access to your member dashboard, track curriculum progress, and allocate video conference credits. Data is held in strict confidence. Read our{' '}
+                <Link href="/privacy" className="text-gold underline hover:text-gold-bright">
+                  Privacy Policy
+                </Link>.
+              </p>
+            </div>
+
             <button
               type="submit"
               id="member-submit-auth-btn"

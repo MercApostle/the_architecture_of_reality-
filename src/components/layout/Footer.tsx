@@ -54,9 +54,17 @@ export default function Footer() {
       </div>
 
       <div className="hairline" />
-      <div className="container-x flex flex-col gap-4 py-8 text-xs leading-relaxed text-faint md:flex-row md:justify-between">
-        <p>© {year} The Architecture of Reality. All rights reserved.</p>
-        <p className="max-w-2xl md:text-right">
+      <div className="container-x flex flex-col gap-4 py-8 text-xs leading-relaxed text-faint md:flex-row md:justify-between items-start md:items-center">
+        <div className="space-y-1">
+          <p>© {year} The Architecture of Reality. All rights reserved.</p>
+          <p>
+            <Link href="/privacy" className="text-muted hover:text-gold underline transition">
+              Privacy Policy &amp; BC PIPA Compliance
+            </Link>
+            {' '}&middot; British Columbia, Canada
+          </p>
+        </div>
+        <p className="max-w-xl md:text-right text-[0.7rem]">
           Operational disclaimer: content and diagnostics are educational and philosophical in nature. They are not
           medical, psychological, legal, or financial advice. Consult a qualified professional for your specific
           circumstances.

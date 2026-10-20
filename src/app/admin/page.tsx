@@ -1,4 +1,6 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import AdminDashboard from '@/components/admin/AdminDashboard';
 import { getStoredApplications } from '@/lib/actions/consultancy.actions';
 import { getClientProjectData } from '@/lib/queries/consultancy.queries';
@@ -6,6 +8,7 @@ import {
   getRegisteredMembers,
   getOperatorRadar,
   getVideoCallBookings,
+  isOperatorAuthorized,
 } from '@/lib/actions/operator.actions';
 import { PageHero } from '@/components/ui/primitives';
 
@@ -15,7 +18,12 @@ export const metadata: Metadata = {
     'Internal management command center to monitor real-time member progression, inspect the activity radar, manage video bookings, and review founder applications.',
 };
 
-export default async function AdminPage() {
+async function AdminContent() {
+  const isAuthorized = await isOperatorAuthorized();
+  if (!isAuthorized) {
+    redirect('/operator');
+  }
+
   const [applications, clientData, members, activityLogs, videoBookings] =
     await Promise.all([
       getStoredApplications(),
@@ -25,6 +33,18 @@ export default async function AdminPage() {
       getVideoCallBookings(),
     ]);
 
+  return (
+    <AdminDashboard
+      initialApplications={applications}
+      initialClientData={clientData}
+      initialMembers={members}
+      initialActivityLogs={activityLogs}
+      initialBookings={videoBookings}
+    />
+  );
+}
+
+export default function AdminPage() {
   return (
     <div className="min-h-screen bg-obsidian text-ink">
       <PageHero
@@ -38,13 +58,15 @@ export default async function AdminPage() {
       />
 
       <section className="container-x py-12">
-        <AdminDashboard
-          initialApplications={applications}
-          initialClientData={clientData}
-          initialMembers={members}
-          initialActivityLogs={activityLogs}
-          initialBookings={videoBookings}
-        />
+        <Suspense
+          fallback={
+            <div className="min-h-[400px] flex items-center justify-center">
+              <div className="animate-spin w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full" />
+            </div>
+          }
+        >
+          <AdminContent />
+        </Suspense>
       </section>
     </div>
   );

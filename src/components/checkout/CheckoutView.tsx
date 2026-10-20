@@ -31,6 +31,7 @@ export default function CheckoutView() {
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvc, setCardCvc] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(true);
+  const [optInUpdates, setOptInUpdates] = useState(false);
   const [orderBump, setOrderBump] = useState(false);
 
   // UI state
@@ -818,17 +819,45 @@ export default function CheckoutView() {
               </div>
             )}
 
+            {/* BC PIPA Statutory Notice */}
+            <div className="p-3.5 rounded-xl border border-line bg-obsidian/70 space-y-1 text-left">
+              <div className="flex items-center gap-1.5 text-gold font-mono text-[0.62rem] uppercase tracking-wider font-semibold">
+                <span>🛡️</span>
+                <span>BC PIPA Billing &amp; Privacy Notice</span>
+              </div>
+              <p className="text-[0.65rem] text-muted leading-relaxed">
+                Billing information is encrypted and transmitted securely via PCI-DSS Level 1 compliant Stripe infrastructure. Personal details are collected pursuant to British Columbia&apos;s <em>Personal Information Protection Act</em> strictly to fulfill digital orders, provision course vaults, and issue tax receipts. Review our{' '}
+                <Link href="/privacy" className="text-gold underline hover:text-gold-bright">
+                  Privacy Policy
+                </Link>.
+              </p>
+            </div>
+
             {/* Terms check */}
-            <div className="pt-2">
+            <div className="space-y-2.5 pt-1">
               <label className="flex items-start gap-3 cursor-pointer text-xs text-muted">
                 <input
                   type="checkbox"
+                  required
                   checked={agreeTerms}
                   onChange={(e) => setAgreeTerms(e.target.checked)}
                   className="mt-0.5 accent-gold"
                 />
                 <span>
-                  I agree to the Sovereign Operating Protocol, non-disclosure license terms, and understand all digital materials include the 30-Day Dynamic Balance Guarantee.
+                  I agree to the Sovereign Operating Protocol, non-disclosure license terms, and the 30-Day Dynamic Balance Guarantee. <span className="text-gold">*</span>
+                </span>
+              </label>
+
+              {/* Unbundled Optional Consent */}
+              <label className="flex items-start gap-3 cursor-pointer text-xs text-muted">
+                <input
+                  type="checkbox"
+                  checked={optInUpdates}
+                  onChange={(e) => setOptInUpdates(e.target.checked)}
+                  className="mt-0.5 accent-gold"
+                />
+                <span className="text-faint">
+                  Optional: I consent to receive sovereign canon dispatches, field notes, and curriculum updates from Jeremy Ashe (unbundled consent; unsubscribe anytime).
                 </span>
               </label>
             </div>
